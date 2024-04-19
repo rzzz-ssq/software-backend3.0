@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.dao.CommonEntityMapper">
+
+    <select id="findTargetColumnIndex" resultType="java.lang.Integer">
+        SELECT ordinal_position
+        FROM information_schema.columns
+        WHERE table_name = #{tablename}
+          AND column_name = #{target}
+            LIMIT 1
+    </select>
+
+
+</mapper>

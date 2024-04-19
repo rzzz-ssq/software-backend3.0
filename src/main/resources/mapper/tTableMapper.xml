@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cqupt.software4_backendv2.dao.tTableMapper">
+
+
+    <insert id="insertTable" parameterType="com.cqupt.software4_backendv2.entity.tTable">
+        INSERT INTO t_table_manager (table_name, field_name, is_label)
+        VALUES
+        <foreach collection="tableHeaders" item="header" separator=",">
+            (#{tableName}, #{header.fieldName},#{header.isLabel})
+        </foreach>
+    </insert>
+
+    <select id="getMutipleList" resultType="HashMap">
+        select field_name,is_label from t_table_manager where table_name = #{tablename}
+    </select>
+
+</mapper>

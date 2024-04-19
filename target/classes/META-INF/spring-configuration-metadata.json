@@ -1,0 +1,33 @@
+{
+  "groups": [
+    {
+      "name": "application.python",
+      "type": "com.cqupt.software4_backendv2.tool.PythonRun",
+      "sourceType": "com.cqupt.software4_backendv2.config.ApplicationConfig",
+      "sourceMethod": "getPythonRunBean()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "application.python.auto-remove-cache",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.cqupt.software4_backendv2.tool.PythonRun"
+    },
+    {
+      "name": "application.python.cache",
+      "type": "java.lang.String",
+      "sourceType": "com.cqupt.software4_backendv2.tool.PythonRun"
+    },
+    {
+      "name": "application.python.environment",
+      "type": "java.lang.String",
+      "sourceType": "com.cqupt.software4_backendv2.tool.PythonRun"
+    },
+    {
+      "name": "application.python.root",
+      "type": "java.lang.String",
+      "sourceType": "com.cqupt.software4_backendv2.tool.PythonRun"
+    }
+  ],
+  "hints": []
+}

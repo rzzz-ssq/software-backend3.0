@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.dao.CategoryMapper">
+
+
+    <update id="removeNode">
+        update category set is_delete=1 where id = CAST(#{id} AS VARCHAR);
+    </update>
+    <update id="removeTable">
+        drop table "${label}";
+    </update>
+    <update id="changeStatusToShare">
+        update category set status=1 where id = #{id} ;
+        update table_describe set table_status=1 where table_id = #{id};
+    </update>
+    <update id="changeStatusToPrivate">
+        update category set status=0 where id = #{id};
+        update table_describe set table_status=0 where table_id = #{id};
+    </update>
+
+
+    <select id="getLabelByPid" resultType="java.lang.String">
+        SELECT "label" FROM category WHERE id = #{pid};
+    </select>
+
+    <select id="getSpDisease" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
+        SELECT * FROM category WHERE is_common = 0 and is_leafs = 1;
+    </select>
+
+
+    <select id="getComDisease" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
+        SELECT * FROM category WHERE is_common = 1 and is_leafs = 1;
+    </select>
+
+    <select id="getLevel2Label" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
+        SELECT * FROM category WHERE cat_level=2;
+    </select>
+
+    <select id="getLabelsByPid" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
+        SELECT * FROM category WHERE parent_id = #{pid};
+    </select>
+
+    <update id="updateTableNameByTableId">
+        update category set label=#{tableName}, status=#{tableStatus} where id = CAST(#{tableid} AS VARCHAR);;
+    </update>
+
+</mapper>

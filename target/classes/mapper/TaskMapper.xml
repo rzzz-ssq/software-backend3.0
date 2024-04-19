@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.cqupt.software4_backendv2.dao.TaskMapper">
+
+
+
+    <select id="getAlgorithmUsageDailyStatsLast7Days" resultMap="AlgorithmUsageDailyStatsMap">
+        SELECT
+            t.formattedDate,
+            t.model,
+            t.usageCount,
+            subquery.total
+        FROM (
+                 SELECT
+                     TO_CHAR(createtime, 'MM-DD') AS formattedDate,
+                     model,
+                     COUNT(*) AS usageCount
+                 FROM
+                     software4.software4task
+                 WHERE
+                     createtime >= CURRENT_DATE - INTERVAL '7 days'
+                 GROUP BY
+                     formattedDate, model
+             ) AS t
+                 JOIN (
+            SELECT
+                TO_CHAR(createtime, 'MM-DD') AS formattedDate,
+                COUNT(*) AS total
+            FROM
+                software4.software4task
+            WHERE
+                createtime >= CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY
+                formattedDate
+        ) AS subquery ON t.formattedDate = subquery.formattedDate
+        ORDER BY
+            t.formattedDate, t.model;
+    </select>
+
+    <resultMap id="AlgorithmUsageDailyStatsMap" type="com.cqupt.software4_backendv2.entity.AlgorithmUsageDailyStats">
+        <id property="formattedDate" column="formattedDate"/>
+        <id property="total" column="total"/>
+        <collection property="usages" ofType="com.cqupt.software4_backendv2.entity.AlgorithmUsage">
+            <result property="model" column="model"/>
+            <result property="usageCount" column="usageCount"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAlgorithmName" resultType="java.lang.String">
+        select Distinct model from software4.software4task
+    </select>
+
+    <select id="getTaskList" resultType="com.cqupt.software4_backendv2.entity.Task">
+        select *  from software4.software4task order by createtime desc
+    </select>
+
+<!--    <select id="getTaskListByConditions" resultType="com.cqupt.software4_backendv2.entity.Task">-->
+<!--        select *  from software4.software4task-->
+<!--        <where>-->
+<!--            <if test="leader != null and leader != ''">-->
+<!--                AND leader = #{leader}-->
+<!--            </if>-->
+<!--            <if test="dataset != null and dataset != ''">-->
+<!--                AND dataset = #{dataset}-->
+<!--            </if>-->
+<!--            <if test="disease != null and disease != ''">-->
+<!--                AND disease = #{disease}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        order by createtime desc-->
+<!--    </select>-->
+
+
+
+    <select id="getlistbyId" resultType="com.cqupt.software4_backendv2.entity.Task">
+        select * from software4.software4task where  id = #{Id}
+    </select>
+
+    <delete id="deleteTask">
+        DELETE from software4.software4task where id = #{id}
+    </delete>
+
+    <insert id="addTask">
+        INSERT INTO software4.software4task (taskname, leader,participant,disease,model,remark,feature,targetcolumn,result,parametersvalues,parameters,usetime,ci,ratio,dataset,userid,tips,createtime,tasktype)
+        VALUES (#{taskname}, #{leader},#{participant}, #{disease}, #{model}, #{remark},#{feature},#{targetcolumn},#{result},#{parametersvalues},#{parameters},#{usetime},#{ci},#{ratio},#{dataset},#{userid},#{tips},#{createtime},#{tasktype})
+    </insert>
+
+</mapper>

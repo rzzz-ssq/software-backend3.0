@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.dao.ModelMapper">
+
+    <select id="getModelNames" resultType="java.lang.String">
+        SELECT "modelName" FROM software4.software4model;
+    </select>
+
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.dao.FieldManagementMapper">
+
+    <resultMap id="BaseResultMap" type="com.cqupt.software4_backendv2.entity.FieldManagement">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="comment" column="comment" jdbcType="VARCHAR"/>
+            <result property="diseaseStandard" column="disease_standard" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,comment,
+        disease_standard
+    </sql>
+    <update id="updateFieldsByDiseaseName">
+
+        <foreach collection="fields" item="field" separator=";">
+            UPDATE field_management
+            SET disease = array_append(disease, #{diseaseName})
+            WHERE feature_name = #{field}
+        </foreach>
+
+    </update>
+    <select id="getFiledByDiseaseName" resultType="com.cqupt.software4_backendv2.entity.FieldManagementEntity">
+
+
+SELECT * FROM field_management WHERE '${diseaseName}' = ANY(disease)
+
+    </select>
+</mapper>

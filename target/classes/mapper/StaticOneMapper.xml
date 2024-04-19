@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.dao.StasticOneMapper">
+
+    <select id="getDieaseCount" resultType="int">
+        SELECT COUNT(*) FROM  public.category where is_delete=0  and is_leafs = 1;
+    </select>
+
+    <select id="getSampleCount" resultType="int">
+        SELECT COUNT(*) FROM public.${tableName};
+    </select>
+
+    <select id="getTableNames" resultType="java.lang.String">
+        SELECT tablename FROM public.tablemanage;
+    </select>
+
+    <select id="getEarlyDate" resultType="java.util.Date">
+        SELECT MIN(filingtime) AS earliest_date
+        FROM public.${tableName};
+    </select>
+
+    <select id="getAllUserBuiltTableNames" resultType="java.lang.String">
+        SELECT table_name from table_describe where class_path NOT ILIKE '公共数据集%';
+    </select>
+
+    <select id="getLastDate" resultType="java.util.Date">
+        SELECT MAX(filingtime) AS last_date
+        FROM public.${tableName};
+    </select>
+
+    <select id="getTaskCount" resultType="int">
+        SELECT COUNT(*) FROM software4.software4task;
+    </select>
+
+    <select id="getUserBuildTableNames" resultType="java.lang.String">
+        SELECT tablename FROM userbuilt.usertable;
+    </select>
+
+    <select id="getType" resultType="java.lang.String">
+        SELECT classpath_array[array_length(classpath_array, 1) - 1] AS second_last_element
+        FROM (
+                 SELECT STRING_TO_ARRAY(class_path, '/') AS classpath_array
+                 FROM table_describe where table_name=#{tablename}
+             ) AS subquery;
+    </select>
+
+    <select id="getPosNumber" resultType="int">
+        SELECT count(*) FROM "${tablename}" where diagname='${type}';
+    </select>
+
+    <select id="getNegNumber" resultType="int">
+        SELECT count(*) FROM "${tablename}" where diagname!='${type}';
+    </select>
+
+
+    <select id="getTableChineseNames" resultType="java.util.Map">
+        SELECT * FROM public.tablemanage;
+    </select>
+
+    <select id="getAllFilteredTableNames" resultType="java.lang.String">
+        SELECT table_name FROM public.table_describe;
+    </select>
+</mapper>
