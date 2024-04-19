@@ -20,7 +20,7 @@ public interface TableDescribeMapper extends BaseMapper<TableDescribeEntity> {
     List<TableDescribeEntity> selectAllDataInfo();
 
     //根据searchType【表名、用户名、疾病名】搜索
-    List<TableDescribeEntity> selectDataByName(String searchType, String name);
+    List<TableDescribeEntity> selectDataByName(@Param("searchType") String searchType,@Param("name") String name);
     TableDescribeEntity selectDataById(String id);
 
     //    void updateById(String id, String tableName, String tableStatus);

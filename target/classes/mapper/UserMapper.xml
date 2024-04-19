@@ -21,10 +21,10 @@
     </sql>
 
     <select id="queryByUername" resultType="com.cqupt.software4_backendv2.entity.User">
-        SELECT * FROM software10user WHERE username = #{username};
+        SELECT * FROM software4.software4user WHERE username = #{username};
     </select>
 
     <select id="selectByUid" resultType="com.cqupt.software4_backendv2.entity.User">
-        select * from software10user where uid = #{uid}
+        select * from software4.software4user where uid = #{uid}
     </select>
 </mapper>

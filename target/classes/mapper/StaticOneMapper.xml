@@ -5,7 +5,7 @@
 <mapper namespace="com.cqupt.software4_backendv2.dao.StasticOneMapper">
 
     <select id="getDieaseCount" resultType="int">
-        SELECT COUNT(*) FROM  public.category where is_delete=0  and is_leafs = 1;
+        SELECT COUNT(*) FROM  public.tablemanage;
     </select>
 
     <select id="getSampleCount" resultType="int">
