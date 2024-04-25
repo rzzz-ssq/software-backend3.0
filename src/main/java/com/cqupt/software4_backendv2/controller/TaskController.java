@@ -87,6 +87,7 @@ public class TaskController {
         request.setDataset(task.getDataset());
         request.setUid(task.getUserid());
         request.setTasktype(task.getTasktype());
+        request.setTips(task.getTips());
         return Result.success(request);
 
     }

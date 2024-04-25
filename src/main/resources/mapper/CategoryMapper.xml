@@ -34,16 +34,32 @@
         SELECT * FROM category WHERE is_common = 1 and is_leafs = 1;
     </select>
 
+<!--    <select id="getLevel2Label" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">-->
+<!--        SELECT * FROM category WHERE cat_level=2;-->
+<!--    </select>-->
+
+<!--    <select id="getLabelsByPid" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">-->
+<!--        SELECT * FROM category WHERE parent_id = #{pid};-->
+<!--    </select>-->
+
+<!--    <update id="updateTableNameByTableId">-->
+<!--        update category set label=#{tableName}, status=#{tableStatus} where id = CAST(#{tableid} AS VARCHAR);;-->
+<!--    </update>-->
+
+
     <select id="getLevel2Label" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
-        SELECT * FROM category WHERE cat_level=2;
+        --         管理员端-数据管理新更改
+-- 在默认根节点parent_id=1下面的二级目录（即一级病种）下
+        SELECT * FROM category WHERE cat_level=2 and parent_id='1' and is_delete = 0;
     </select>
 
     <select id="getLabelsByPid" resultType="com.cqupt.software4_backendv2.entity.CategoryEntity">
-        SELECT * FROM category WHERE parent_id = #{pid};
+        SELECT * FROM category WHERE parent_id = #{pid} and is_leafs=0 and is_delete = 0;
     </select>
 
     <update id="updateTableNameByTableId">
         update category set label=#{tableName}, status=#{tableStatus} where id = CAST(#{tableid} AS VARCHAR);;
     </update>
+
 
 </mapper>

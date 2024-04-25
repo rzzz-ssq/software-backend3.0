@@ -4,6 +4,7 @@ package com.cqupt.software4_backendv2.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cqupt.software4_backendv2.common.Result;
+import com.cqupt.software4_backendv2.dao.CategoryMapper;
 import com.cqupt.software4_backendv2.dao.TableDescribeMapper;
 import com.cqupt.software4_backendv2.dao.UserMapper;
 import com.cqupt.software4_backendv2.entity.CategoryEntity;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,8 @@ public class TableDescribeController {
     CategoryService categoryService;
     @Autowired
     UserService userService;
+    @Autowired
+    CategoryMapper categoryMapper;
 
     @GetMapping("/tableDescribe")
     public Result<TableDescribeEntity> getTableDescribe(@RequestParam("id") String id){ // 参数表的Id
@@ -59,20 +63,70 @@ public class TableDescribeController {
                                   @RequestParam("pid") String pid,
                                   @RequestParam("tableName") String tableName,
                                   @RequestParam("userName") String userName,
-                                  @RequestParam("classPath") String classPath,
-                                  @RequestParam("uid") String uid,
+                                  @RequestParam("ids") String[] ids,
+                                  @RequestParam("uid") String uid,   // 传表中涉及到的用户的uid
                                   @RequestParam("tableStatus") String tableStatus,
-                                  @RequestParam("tableSize") Double tableSize
+                                  @RequestParam("tableSize") Double tableSize,
+                                  @RequestParam("current_uid") String current_uid //操作用户的uid
     ){
         // 保存表数据信息
         try {
-
-            List<String> featureList = tableDescribeService.uploadDataTable(file, pid, tableName, userName, classPath, uid, tableStatus, tableSize);
+//            String tableId="";
+            // 管理员端-数据管理新更改
+//            传入的是category的id集合，根据id获取labels拼接成classpath
+            String classPath = "公共数据集";
+            for (String id : ids){
+                CategoryEntity categoryEntity = categoryMapper.selectById(id);
+                classPath += "/" + categoryEntity.getLabel();
+            }
+            classPath += "/" + tableName;
+            List<String> featureList = tableDescribeService.uploadDataTable(file, pid, tableName, userName, classPath, uid, tableStatus, tableSize, current_uid);
             return Result.success("200",featureList); // 返回表头信息
         }catch (Exception e){
             e.printStackTrace();
             return Result.success(500,"文件上传异常");
         }
+    }
+
+    // 管理员端-数据管理新更改
+    @GetMapping("/selectDataDiseases")
+    public Result<TableDescribeEntity> selectDataDiseases(
+//            @RequestParam("current_uid") String current_uid
+    ){ // 参数表的Id
+        List<CategoryEntity> res = categoryService.getLevel2Label();
+
+        List<Object> retList = new ArrayList<>();
+        for (CategoryEntity category : res) {
+            Map<String, Object> ret =  new HashMap<>();
+            ret.put("label", category.getLabel());
+            ret.put("value", category.getId());
+            if (selectCategoryDataDiseases(category.getId()).size() > 0) {
+                ret.put("children", selectCategoryDataDiseases(category.getId()));
+            }
+
+            retList.add(ret);
+        }
+        System.out.println(retList);
+
+
+        return Result.success("200",retList);
+//        return Result.success("200",adminDataManages);
+    }
+
+    // 管理员端-数据管理新更改
+    public List<Map<String, Object>> selectCategoryDataDiseases(String pid){
+        List<Map<String, Object>> retList = new ArrayList<>();
+        List<CategoryEntity> res = categoryService.getLabelsByPid(pid);
+        for (CategoryEntity category : res) {
+            Map<String, Object> ret =  new HashMap<>();
+            ret.put("label", category.getLabel());
+            ret.put("value", category.getId());
+            if (selectCategoryDataDiseases(category.getId()).size() > 0) {
+                ret.put("children", selectCategoryDataDiseases(category.getId()));
+            }
+            retList.add(ret);
+        }
+        return retList;
     }
 
     @GetMapping("/selectAdminDataManage")

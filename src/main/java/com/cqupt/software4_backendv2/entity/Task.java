@@ -40,6 +40,6 @@ public class Task implements Serializable {
     private double  ratio;
     private String dataset;
     private String tips;
-    private Integer userid;
+    private String userid;
     private String tasktype;
 }

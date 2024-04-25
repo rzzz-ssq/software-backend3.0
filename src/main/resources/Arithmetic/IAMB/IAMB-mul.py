@@ -115,7 +115,7 @@ def read_data_from_postgresql(tableName):
     #     query += f" AND \"{field}\" IS NOT NULL"
     # data = pd.read_sql(query, engine)
     #query = f'SELECT "age", "sexcode", "MPV", "P_LCR", "PDW", "PCT", "EO_num", "BASO_num", "RBC", "HGB", "NEUT_per", "LYMPH_per", "WBC", "NEUT_num", "HCT", "LYMPH_num", "MONO_per", "EO_per", "MONO_num", "BASO_per", "RDW_SD", "RDW_CV", "PLT", "temperature", "nationcode", "maritalstatuscode", "occupationcategorycode", "nationalitycode", "edubackgroundcode", "age" FROM merge;'
-    query = f'SELECT * FROM {tableName}'
+    query = f'SELECT * FROM "{tableName}";'
     data = pd.read_sql(query, engine)
     base_data = data
     max_numeric_length = 10  # 设定阈值为10

@@ -56,6 +56,7 @@ public class TableDataController {
                              @RequestParam("is_filter") String is_filter){
         // 保存表数据信息
         try {
+            System.out.println(userId);
             List<String> featureList = tableDataService.ParseFileCol(file,tableName);
             tableDataService.uploadFile(file, tableName, type, user, userId, parentId, parentType,status,size,is_upload,is_filter);
             return Result.success("200",featureList); // 返回表头信息

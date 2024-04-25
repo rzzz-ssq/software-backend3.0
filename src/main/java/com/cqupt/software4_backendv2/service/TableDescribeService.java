@@ -14,7 +14,7 @@ public interface TableDescribeService extends IService<TableDescribeEntity> {
 
 
     @Transactional
-    List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize) throws IOException, ParseException;
+    List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize,String current_uid) throws IOException, ParseException;
 
     List<TableDescribeEntity> selectAllDataInfo();
 

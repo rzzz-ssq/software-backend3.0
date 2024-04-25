@@ -28,6 +28,6 @@ public class TaskRequest {
 
     private String[]  targetcolumn;
     private String[][] res;
-    private Integer uid;
+    private String uid;
     private String tasktype;
 }

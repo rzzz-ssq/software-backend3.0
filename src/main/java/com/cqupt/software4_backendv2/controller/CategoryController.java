@@ -2,22 +2,23 @@ package com.cqupt.software4_backendv2.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cqupt.software4_backendv2.common.Result;
-import com.cqupt.software4_backendv2.dao.TableDescribeMapper;
-import com.cqupt.software4_backendv2.dao.UserMapper;
-import com.cqupt.software4_backendv2.dao.tTableMapper;
-import com.cqupt.software4_backendv2.entity.Category2Entity;
-import com.cqupt.software4_backendv2.entity.CategoryEntity;
-import com.cqupt.software4_backendv2.entity.TableDescribeEntity;
-import com.cqupt.software4_backendv2.entity.tTable;
+import com.cqupt.software4_backendv2.dao.*;
+import com.cqupt.software4_backendv2.entity.*;
 import com.cqupt.software4_backendv2.service.Category2Service;
 import com.cqupt.software4_backendv2.service.CategoryService;
+import com.cqupt.software4_backendv2.vo.AddDiseaseVo;
+import com.cqupt.software4_backendv2.vo.DeleteDiseaseVo;
+import com.cqupt.software4_backendv2.vo.UpdateDiseaseVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
 // TODO 公共模块新增类
 @RestController
@@ -36,6 +37,12 @@ public class CategoryController {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    CategoryMapper categoryMapper;
+
+    @Autowired
+    UserLogMapper userLogMapper;
     // 获取目录
     @GetMapping("/category")
     public Result<List<CategoryEntity>> getCatgory(@RequestParam String uid){
@@ -146,4 +153,54 @@ public class CategoryController {
         return Result.success("200",flag); // 判断文件名是否重复
     }
 
+
+    //    zongqing新增疾病管理模块
+    @GetMapping("/category/getAllDisease")
+    public Result<List<CategoryEntity>> getAllDisease(){
+        List<CategoryEntity> list = categoryService.getAllDisease();
+        System.out.println(JSON.toJSONString(list));
+        return Result.success("200",list);
+    }
+    @PostMapping("/category/addCategory")
+    public Result addCategory(@RequestBody AddDiseaseVo addDiseaseVo){
+        if(categoryService.addCategory(addDiseaseVo)>0){
+            UserLog userLog = new UserLog(null,addDiseaseVo.getUsername(),(addDiseaseVo.getUid()),"添加病种"+addDiseaseVo.getFirstDisease(),new Date(),0);
+            userLogMapper.insert(userLog);
+            return Result.success("添加病种成功");
+        }else{
+            UserLog userLog = new UserLog(null,addDiseaseVo.getUsername(),(addDiseaseVo.getUid()),"添加病种"+addDiseaseVo.getFirstDisease()+"失败",new Date(),0);
+            userLogMapper.insert(userLog);
+            return Result.fail("添加病种失败");
+        }
+    }
+    @PostMapping("/category/updateCategory")
+    public Result updateCategory(@RequestBody UpdateDiseaseVo updateDiseaseVo){
+        UserLog userLog = new UserLog(null,updateDiseaseVo.getUsername(),(updateDiseaseVo.getUid()),"修改病种"+updateDiseaseVo.getOldName()+"为"+updateDiseaseVo.getDiseaseName(),new Date(),0);
+        userLogMapper.insert(userLog);
+        return categoryService.updateCategory(updateDiseaseVo);
+    }
+    @PostMapping("/category/deleteCategory")
+    public Result deleteCategory(@RequestBody DeleteDiseaseVo deleteDiseaseVo){
+        StringJoiner joiner = new StringJoiner(",");
+        for (String str : deleteDiseaseVo.getDeleteNames()) {
+            joiner.add(str);
+        }
+        UserLog userLog = new UserLog(null,deleteDiseaseVo.getUsername(),(deleteDiseaseVo.getUid()),"删除病种："+joiner.toString(),new Date(),0);
+        userLogMapper.insert(userLog);
+        categoryService.removeCategorys(deleteDiseaseVo.getDeleteIds());
+        return Result.success("删除成功");
+    }
+
+    /**
+     * 修改。加了isNULL条件
+     */
+    @GetMapping("/category/checkDiseaseName/{diseaseName}")
+    public Result checkDiseaseName(@PathVariable String diseaseName){
+        QueryWrapper<CategoryEntity> queryWrapper = Wrappers.query();
+        queryWrapper.eq("label", diseaseName)
+                .eq("is_delete", 0)
+                .isNull("status");
+        CategoryEntity category = categoryMapper.selectOne(queryWrapper);
+        return category==null?Result.success("200","病种名可用"):Result.fail("400","病种名已存在");
+    }
 }

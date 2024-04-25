@@ -11,7 +11,7 @@ def get_fill_rate(database, user, password, host, port, table_name):
     cursor = conn.cursor()
 
     # 执行SQL查询，获取表数据
-    query = f'SELECT * FROM {table_name};'
+    query = f'SELECT * FROM "{table_name}";'  # 使用双引号包围表名
     cursor.execute(query)
     rows = cursor.fetchall()
     # 获取字段名

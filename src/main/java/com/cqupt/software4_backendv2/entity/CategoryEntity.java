@@ -29,11 +29,19 @@ public class CategoryEntity {
     private String username;
     private String isUpload;
     private String isFilter;
+    private String icdCode;
     @TableField(exist = false)
     private List<CategoryEntity> children;
 
+    @TableField(exist = false)
+    private int tableNum0;
+    @TableField(exist = false)
+    private int tableNum1;
+    @TableField(exist = false)
+    private int tableNum2;
 
-    public CategoryEntity(String id, int catLevel, String label, String parentId, int isLeafs, int isDelete, String uid, String status, String username,String isUpload,String isFilter) {
+
+    public CategoryEntity(String id, int catLevel, String label, String parentId, int isLeafs, int isDelete, String uid, String status, String username,String isUpload,String isFilter,String icdCode) {
         this.id = id;
         this.catLevel = catLevel;
         this.label = label;
@@ -45,6 +53,7 @@ public class CategoryEntity {
         this.username = username;
         this.isUpload = isUpload;
         this.isFilter = isFilter;
+        this.icdCode = icdCode;
         this.children = new ArrayList<>();
     }
 
@@ -58,7 +67,7 @@ public class CategoryEntity {
     // 递归复制符合条件的节点
     public static CategoryEntity copyPrivareTreeStructure(CategoryEntity node,String uid) {
         if (node.isLeafs == 0 || (node.isLeafs == 1 && "0".equals(node.status) && uid.equals(node.uid))) {
-            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "0", node.username,node.isUpload,node.isFilter);
+            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "0", node.username,node.isUpload,node.isFilter,node.icdCode);
             if (node.children != null) {
                 for (CategoryEntity child : node.children) {
                     CategoryEntity copiedChild = copyPrivareTreeStructure(child,uid);
@@ -75,7 +84,7 @@ public class CategoryEntity {
 
     public static CategoryEntity copyShareTreeStructure(CategoryEntity node) {
         if (node.isLeafs == 0 || (node.isLeafs == 1 && "1".equals(node.status))) {
-            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "1", node.username,node.isUpload,node.isFilter);
+            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "1", node.username,node.isUpload,node.isFilter,node.icdCode);
             if (node.children != null) {
                 for (CategoryEntity child : node.children) {
                     CategoryEntity copiedChild = copyShareTreeStructure(child);
@@ -92,7 +101,7 @@ public class CategoryEntity {
 
     public static CategoryEntity copyCommonTreeStructure(CategoryEntity node) {
         if (node.isLeafs == 0 || (node.isLeafs == 1 && "2".equals(node.status))) {
-            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "2", node.username,node.isUpload,node.isFilter);
+            CategoryEntity newNode = new CategoryEntity(node.id, node.catLevel, node.label, node.parentId, node.isLeafs, node.isDelete, node.uid, "2", node.username,node.isUpload,node.isFilter,node.icdCode);
             if (node.children != null) {
                 for (CategoryEntity child : node.children) {
                     CategoryEntity copiedChild = copyCommonTreeStructure(child);
