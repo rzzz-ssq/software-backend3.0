@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.software4_backendv2.mapper.UserLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.cqupt.software4_backendv2.entity.UserLog">
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="uid" column="uid" jdbcType="VARCHAR"/>
+            <result property="opTime" column="op_time" jdbcType="TIMESTAMP"/>
+            <result property="operation" column="operation" jdbcType="VARCHAR"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="role" column="role" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,uid,op_time,
+        operation,username
+    </sql>
+    <select id="getAllLogs" resultType="com.cqupt.software4_backendv2.entity.UserLog">
+        SELECT * FROM software4.log
+    </select>
+</mapper>

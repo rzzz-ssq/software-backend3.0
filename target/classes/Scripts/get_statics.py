@@ -12,7 +12,7 @@ def analyze_table_statistics(database, user, password, host, port, table_name):
     cursor = conn.cursor()
 
     # 执行SQL查询，获取表数据
-    query = f"SELECT * FROM {table_name};"
+    query = f'SELECT * FROM "{table_name}";'
     cursor.execute(query)
     rows = cursor.fetchall()
 
