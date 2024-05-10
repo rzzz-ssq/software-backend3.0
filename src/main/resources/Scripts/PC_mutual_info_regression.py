@@ -48,6 +48,7 @@ args = parser.parse_args()
 tableName = args.tableName
 features = args.calculatedColumns[0].split(" ")
 labels = args.targetcolumn[0].split(" ")
+
 data = read_data_from_postgresql(tableName)
 data_filtered = data[labels + features]
 
@@ -79,5 +80,11 @@ for edge, weight in edge_weights.items():
         results[edge[1]]["res"].append({edge[0]: weight})
 
 output = [value for value in results.values() if value["res"]]
+
+target_cols = [item["targetcol"] for item in output]
+
+for tarName in labels:
+    if(tarName not in target_cols):
+        output.append({"targetcol": tarName, "res": []})
 json_output = json.dumps(output, ensure_ascii=False, indent=4)
 print(json_output)

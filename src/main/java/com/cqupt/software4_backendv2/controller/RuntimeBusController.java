@@ -170,17 +170,28 @@ public class RuntimeBusController {
         for (String tar: targetList){
             for (Map<String, Object> map: data) {
                 if(map.get("targetcol").equals(tar)){
+                    List<String> tempResList = new ArrayList<>();
+                    List<Double> temWeightList = new ArrayList<>();
                     List<Map<String,Double>> res = (List<Map<String, Double>>) map.get("res");
-                    for (Map<String, Double> tempres:res){
-                        Set<String> keys = tempres.keySet();
-                        for (String key : keys) {
-                            resDoubleList.add(Collections.singletonList(key));
+                    if(res.size()>0){
+                        for (Map<String, Double> tempres:res){
+                            Set<String> keys = tempres.keySet();
+                            for (String key : keys) {
+                                tempResList.add(key);
+                            }
+                            Collection<Double> values = tempres.values();  // 获取所有值的集合
+                            for (Double value : values) {
+                                temWeightList.add(value);
+                            }
                         }
-                        Collection<Double> values = tempres.values();  // 获取所有值的集合
-                        for (Double value : values) {
-                            weightDoubleList.add(Collections.singletonList(value));
-                        }
+                        resDoubleList.add(tempResList);
+                        weightDoubleList.add(temWeightList);
                     }
+                    else{
+                        resDoubleList.add(tempResList);
+                        weightDoubleList.add(temWeightList);
+                    }
+
                 }
             }
         }

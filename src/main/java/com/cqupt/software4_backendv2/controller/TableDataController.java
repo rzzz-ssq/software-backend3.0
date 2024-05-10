@@ -3,11 +3,16 @@ package com.cqupt.software4_backendv2.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cqupt.software4_backendv2.common.Result;
+import com.cqupt.software4_backendv2.dao.FilterDataColMapper;
+import com.cqupt.software4_backendv2.dao.FilterDataInfoMapper;
 import com.cqupt.software4_backendv2.dao.StasticOneMapper;
 import com.cqupt.software4_backendv2.dao.UserLogMapper;
 import com.cqupt.software4_backendv2.entity.CategoryEntity;
+import com.cqupt.software4_backendv2.entity.FilterDataCol;
+import com.cqupt.software4_backendv2.entity.FilterDataInfo;
 import com.cqupt.software4_backendv2.entity.UserLog;
 import com.cqupt.software4_backendv2.service.*;
+import com.cqupt.software4_backendv2.vo.FilterConditionVo;
 import com.cqupt.software4_backendv2.vo.FilterTableDataVo;
 
 import org.python.antlr.op.In;
@@ -36,6 +41,10 @@ public class TableDataController {
     TableDescribeService tableDescribeService;
     @Autowired
     UserLogMapper userLogMapper;
+    @Autowired
+    FilterDataColMapper filterDataColMapper;
+    @Autowired
+    FilterDataInfoMapper filterDataInfoMapper;
     @GetMapping("/getTableData")
     public Result getTableData(@RequestParam("tableId") String tableId, @RequestParam("tableName") String tableName){
         System.out.println("tableId=="+tableId+"   tableName=="+tableName);
@@ -150,13 +159,39 @@ public class TableDataController {
         return Result.success(200,"SUCCESS");
     }
 
+    @PostMapping("/createFilterBtnTable")
+    public Result createFilterBtnTable(@RequestBody FilterTableDataVo filterTableDataVo,
+                              @RequestHeader("uid") String userId,
+                              @RequestHeader("username") String username,
+                              @RequestHeader("role") Integer role){
+        tableDataService.createFilterBtnTable(filterTableDataVo.getAddDataForm().getDataName(),filterTableDataVo.getAddDataForm().getCharacterList(),
+                filterTableDataVo.getAddDataForm().getCreateUser(),filterTableDataVo.getStatus(),filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername(),filterTableDataVo.getAddDataForm().getIsFilter(),filterTableDataVo.getAddDataForm().getIsUpload(),filterTableDataVo.getAddDataForm().getUid_list(),filterTableDataVo.getNodeid());
+        UserLog userLog = new UserLog();
+        // userLog.setId(1);
+        userLog.setUsername(username);
+        userLog.setUid(userId);
+        userLog.setRole(role);
+        userLog.setTime(new Date());
+        userLog.setOperation("用户建表"+filterTableDataVo.getAddDataForm().getDataName());
+        userLogMapper.insert(userLog);
+        return Result.success(200,"SUCCESS");
+    }
+
     // 根据条件筛选数据
     @PostMapping("/filterTableData")
     public Result<List<Map<String,Object>>> getFilterTableData(@RequestBody FilterTableDataVo filterTableDataVo){
-        List<LinkedHashMap<String, Object>> filterDataByConditions = tableDataService.getFilterDataByConditions(filterTableDataVo.getAddDataForm().getCharacterList(), filterTableDataVo.getNodeData());
+        List<LinkedHashMap<String, Object>> filterDataByConditions = tableDataService.getFilterDataByConditions(filterTableDataVo.getAddDataForm().getCharacterList(), filterTableDataVo.getNodeData(),filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername());
         System.out.println("筛选数据长度为："+filterDataByConditions.size());
         return Result.success("200",filterDataByConditions);
     }
+
+    @PostMapping("/getFilterDataByConditionsByDieaseId")
+    public Result<List<Map<String,Object>>> getFilterDataByConditionsByDieaseId(@RequestBody FilterTableDataVo filterTableDataVo){
+        List<LinkedHashMap<String, Object>> filterDataByConditions = tableDataService.getFilterDataByConditionsByDieaseId(filterTableDataVo.getAddDataForm().getCharacterList(), filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername(),filterTableDataVo.getNodeid());
+        System.out.println("筛选数据长度为："+filterDataByConditions.size());
+        return Result.success("200",filterDataByConditions);
+    }
+
 
     @GetMapping("/getInfoByTableName/{tableName}")
     public Result<List<Map<String,Object>>> getInfoByTableName(@PathVariable("tableName") String tableName){
@@ -170,6 +205,20 @@ public class TableDataController {
         tableName = tableName.replace("\"", "");
         Integer res = tableDataService.getCountByTableName(tableName);
         return Result.success(200, "成功", res);
+    }
+
+    @GetMapping("/getFilterConditionInfos")
+    public Result getFilterInfo(){
+        ArrayList<FilterConditionVo> vos = new ArrayList<>();
+        List<FilterDataInfo> filterDataInfos = filterDataInfoMapper.selectList(null);
+        for (FilterDataInfo filterDataInfo : filterDataInfos) {
+            FilterConditionVo filterConditionVo = new FilterConditionVo();
+            filterConditionVo.setFilterDataInfo(filterDataInfo);
+            List<FilterDataCol> filterDataCols = filterDataColMapper.selectList(new QueryWrapper<FilterDataCol>().eq("filter_data_info_id", filterDataInfo.getId()));
+            filterConditionVo.setFilterDataCols(filterDataCols);
+            vos.add(filterConditionVo);
+        }
+        return Result.success("200",vos);
     }
 
 }
