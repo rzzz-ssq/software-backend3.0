@@ -45,7 +45,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper,CategoryEnti
 
         CategoryEntity copiedTree1 = copyPrivareTreeStructure(treeData.get(0),uid);
         copiedTree1.setLabel("私有数据集");
-        CategoryEntity copiedTree2 = copyShareTreeStructure(treeData.get(0));
+        CategoryEntity copiedTree2 = copyShareTreeStructure(treeData.get(0),uid);
         copiedTree2.setLabel("共享数据集");
         CategoryEntity copiedTree3 = copyCommonTreeStructure(treeData.get(0));
         copiedTree3.setLabel("公共数据集");
@@ -87,7 +87,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper,CategoryEnti
 
     @Override
     public void addParentDisease(String diseaseName) {
-        CategoryEntity categoryEntity = new CategoryEntity(null, 1, diseaseName, "0", 0, 0, null, null,null,null,null,null,null,0,0,0);
+        CategoryEntity categoryEntity = new CategoryEntity(null, 1, diseaseName, "0", 0, 0, null, null,null,null,null,null,null,null,0,0,0);
         categoryMapper.insert(categoryEntity);
     }
 
@@ -250,7 +250,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper,CategoryEnti
     //添加病种
     @Override
     public int addCategory(AddDiseaseVo addDiseaseVo){
-        CategoryEntity category = new CategoryEntity(null,addDiseaseVo.getCatLevel(),addDiseaseVo.getFirstDisease(),addDiseaseVo.getParentId(),0,0,addDiseaseVo.getUid(),null,addDiseaseVo.getUsername(),null,null,addDiseaseVo.getIcdCode(),null,0,0,0);
+        CategoryEntity category = new CategoryEntity(null,addDiseaseVo.getCatLevel(),addDiseaseVo.getFirstDisease(),addDiseaseVo.getParentId(),0,0,addDiseaseVo.getUid(),null,addDiseaseVo.getUsername(),null,null,addDiseaseVo.getIcdCode(),null,null,0,0,0);
         return categoryMapper.insert(category);
     }
     private Result addFirstDisease(AddDiseaseVo addDiseaseVo){
@@ -261,7 +261,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper,CategoryEnti
                 .eq("is_delete",0);
         CategoryEntity category = categoryMapper.selectOne(queryWrapper);
         if(category==null){
-            CategoryEntity categoryEntity = new CategoryEntity(null, 2, addDiseaseVo.getFirstDisease(), "1", 0, 0, addDiseaseVo.getUid(), null, addDiseaseVo.getUsername(), null,null,null,null,0,0,0);
+            CategoryEntity categoryEntity = new CategoryEntity(null, 2, addDiseaseVo.getFirstDisease(), "1", 0, 0, addDiseaseVo.getUid(), null, addDiseaseVo.getUsername(), null,null,null,null,null,0,0,0);
             categoryMapper.insert(categoryEntity);
             return Result.success("添加成功");
         }else{

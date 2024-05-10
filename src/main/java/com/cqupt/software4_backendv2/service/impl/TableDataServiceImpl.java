@@ -56,8 +56,9 @@ public class TableDataServiceImpl implements TableDataService {
 
     @Transactional(propagation = Propagation.REQUIRED) // 事务控制
     @Override
-    public List<String> uploadFile(MultipartFile file, String tableName, String type, String user, String userId, String parentId, String parentType,String status,Double size,String is_upload,String is_filter) throws IOException, ParseException {
+    public Map<String,Object>  uploadFile(MultipartFile file, String tableName, String type, String user, String userId, String parentId, String parentType, String status, Double size, String is_upload, String is_filter,String uid_list) throws IOException, ParseException {
         System.out.println(parentId);
+        Map<String,Object> res = new HashMap<>();
         // 封住表描述信息
         CategoryEntity node = new CategoryEntity();
         node.setIsDelete(0);
@@ -71,8 +72,9 @@ public class TableDataServiceImpl implements TableDataService {
         node.setLabel(tableName);
         node.setIsFilter(is_filter);
         node.setIsUpload(is_upload);
+        node.setUidList(uid_list);
         categoryMapper.insert(node); // 保存目录信息
-
+        res.put("node",node);
         // 表描述信息
         TableDescribeEntity tableDescribeEntity = new TableDescribeEntity();
         tableDescribeEntity.setTableName(tableName);
@@ -85,14 +87,18 @@ public class TableDataServiceImpl implements TableDataService {
         tableDescribeEntity.setTableSize(size);
         // 保存表描述信息
         tableDescribeMapper.insert(tableDescribeEntity);
+        res.put("tableDescribe",tableDescribeEntity);
         List<String> featureList = storeTableData(file, tableName);
+        res.put("featureList",featureList);
         userMapper.decUpdateUserColumnById(userId,size);
-        return featureList;
+        res.put("userId",userId);
+        res.put("size",size);
+        return res;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public void createTable(String tableName, List<CreateTableFeatureVo> characterList, String createUser, CategoryEntity nodeData,String uid,String username,String IsFilter,String IsUpload) {
+    public void createTable(String tableName, List<CreateTableFeatureVo> characterList, String createUser, CategoryEntity nodeData,String uid,String username,String IsFilter,String IsUpload,String uid_list) {
         /**
          *          筛选数据
          *              查询当前目录下的宽表所有数据
@@ -163,7 +169,9 @@ public class TableDataServiceImpl implements TableDataService {
         node.setCatLevel(nodeData.getCatLevel()+1);
         node.setLabel(tableName);
         node.setIsFilter(IsFilter);
+        System.out.println(uid_list);
         node.setIsUpload(IsUpload);
+        node.setUidList(uid_list);
         System.out.println(node);
         categoryMapper.insert(node); // 保存目录信息
 

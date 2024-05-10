@@ -8,4 +8,8 @@ public interface RuntimeBusService {
     RuntimeBusServiceResponse SF_DRMB(RuntimeBusCreateRequest request) throws Exception;
 
     RuntimeBusServiceResponse IAMB(RuntimeBusCreateRequest request) throws Exception;
+
+    RuntimeBusServiceResponse traditional_statistic(RuntimeBusCreateRequest request) throws Exception;
+
+    RuntimeBusServiceResponse pc_algorithm(RuntimeBusCreateRequest request) throws Exception;
 }

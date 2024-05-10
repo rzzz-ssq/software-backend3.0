@@ -24,5 +24,7 @@ public class TableDescribeEntity {
     private String uid;
     private String tableStatus;
     private Double tableSize;
+    private String checkApproving;
+    private String checkApproved;
     private static final long serialVersionUID = 1L;
 }

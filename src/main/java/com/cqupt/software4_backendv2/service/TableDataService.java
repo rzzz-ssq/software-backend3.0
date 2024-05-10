@@ -13,10 +13,10 @@ import java.util.Map;
 // TODO 公共模块新增类
 public interface TableDataService {
     List<LinkedHashMap<String,Object>> getTableData(String TableId, String tableName);
+    // 新增可共享用户列表
+    Map<String,Object>  uploadFile(MultipartFile file, String tableName, String type, String user, String userId, String parentId, String parentType,String status,Double size,String is_upload,String is_filter,String uid_list) throws IOException, ParseException;
 
-    List<String> uploadFile(MultipartFile file, String tableName, String type, String user, String userId, String parentId, String parentType,String status,Double size,String is_upload,String is_filter) throws IOException, ParseException;
-
-    void createTable(String tableName, List<CreateTableFeatureVo> characterList, String createUser, CategoryEntity nodeData,String uid,String username,String IsFilter,String IsUpload);
+    void createTable(String tableName, List<CreateTableFeatureVo> characterList, String createUser, CategoryEntity nodeData,String uid,String username,String IsFilter,String IsUpload,String uid_list);
 
     List<LinkedHashMap<String, Object>> getFilterDataByConditions(List<CreateTableFeatureVo> characterList,CategoryEntity nodeData);
 

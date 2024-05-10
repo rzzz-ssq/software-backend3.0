@@ -14,7 +14,7 @@ public interface TableDescribeService extends IService<TableDescribeEntity> {
 
 
     @Transactional
-    List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize,String current_uid) throws IOException, ParseException;
+    List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize,String current_uid,String uid_list) throws IOException, ParseException;
 
     List<TableDescribeEntity> selectAllDataInfo();
 
@@ -24,8 +24,8 @@ public interface TableDescribeService extends IService<TableDescribeEntity> {
     void deleteByTableName(String tablename);
     void deleteByTableId(String tableId);
 
-    void updateById(String id, String tableName, String tableStatus);
+    void updateById(String id, String[] pids, String tableName, String tableStatus);
     void updateDataBaseTableName(String old_name, String new_name);
 
-    void updateInfo(String id, String tableid, String oldTableName, String tableName, String tableStatus);
+    void updateInfo(String id, String tableid, String oldTableName, String tableName, String tableStatus,String[] pids,String current_uid);
 }

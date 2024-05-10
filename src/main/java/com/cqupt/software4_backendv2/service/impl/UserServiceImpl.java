@@ -2,6 +2,7 @@ package com.cqupt.software4_backendv2.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cqupt.software4_backendv2.dao.UserLogMapper;
 import com.cqupt.software4_backendv2.dao.UserMapper;
 import com.cqupt.software4_backendv2.entity.Task;
 import com.cqupt.software4_backendv2.entity.User;
@@ -23,6 +24,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserLogMapper userLogMapper;
     @Override
     public PageInfo<User> findByPageService(Integer pageNum, Integer pageSize, QueryWrapper<User> queryWrapper) {
         PageHelper.startPage(pageNum,pageSize);
@@ -72,6 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         System.out.println(uploadSize);
         boolean b =  userMapper.updateStatusById(uid, role ,allSize,  status,uploadSize);
         if ( b )  return true;
+
         return false;
     }
 

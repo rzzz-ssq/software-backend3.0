@@ -17,5 +17,7 @@ public class AddDataFormVo {
     private String username;
     private String isUpload;
     private String isFilter;
+    //新增可共享用户列表
+    private String uid_list;
     private List<CreateTableFeatureVo> characterList;
 }

@@ -13,7 +13,8 @@ public interface RuntimeTaskService {
 
     RuntimeTaskResponse submitStastic(RuntimeTaskRequest request) throws Exception;
 
+    RuntimeTaskResponse submitTraditonalStastic(RuntimeTaskRequest request) throws Exception;
 
 
-    
+    RuntimeTaskResponse submitPcAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception;
 }

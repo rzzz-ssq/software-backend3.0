@@ -3,7 +3,6 @@ package com.cqupt.software4_backendv2.common;
 // TODO 公共模块新增
 public enum FeatureType {
     DIAGNOSIS(0, "population"),
-    //    EXAMINE(1, "examine"),
     PATHOLOGY(2, "physiology"),
     VITAL_SIGNS(3, "society");
 

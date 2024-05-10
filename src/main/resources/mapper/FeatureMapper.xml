@@ -10,7 +10,7 @@
     </select>
 
     <select id="selectFeaturesContinue" resultType="com.cqupt.software4_backendv2.entity.FeatureEntity">
-        select * from field_management where ${belongType}=true and discrete ='f';
+        select * from field_management where ${belongType}=true and  type != 'character varying';
     </select>
 
     <select id="getUserFeatureList" resultType="java.lang.String">

@@ -6,7 +6,11 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cqupt.software4_backendv2.common.Result;
 import com.cqupt.software4_backendv2.common.TaskRequest;
+import com.cqupt.software4_backendv2.dao.UserLogMapper;
+import com.cqupt.software4_backendv2.dao.UserMapper;
 import com.cqupt.software4_backendv2.entity.Task;
+import com.cqupt.software4_backendv2.entity.User;
+import com.cqupt.software4_backendv2.entity.UserLog;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cqupt.software4_backendv2.dao.TaskMapper;
@@ -32,6 +36,11 @@ public class TaskController {
 
     @Resource
     private  TaskMapper taskMapper;
+
+    @Autowired
+    UserLogMapper userLogMapper;
+    @Autowired
+    UserMapper userMapper;
 
     @GetMapping("/all")
     public Result getTaskList() {
@@ -173,7 +182,14 @@ public class TaskController {
         task.setDataset(taskrequest.getDataset());
         System.out.println(task);
         taskService.addTask(task);
-
+        UserLog userLog = new UserLog();
+        User user = userMapper.selectByUid(taskrequest.getUid());
+        userLog.setUsername(user.getUsername());
+        userLog.setUid(user.getUid());
+        userLog.setRole(user.getRole());
+        userLog.setTime(new Date());
+        userLog.setOperation("用户新建任务"+taskrequest.getTaskName()+";类型是"+taskrequest.getTasktype());
+        userLogMapper.insert(userLog);
         return taskService.getTaskList();
     }
 

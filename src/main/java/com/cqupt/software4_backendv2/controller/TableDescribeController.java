@@ -9,17 +9,16 @@ import com.cqupt.software4_backendv2.dao.TableDescribeMapper;
 import com.cqupt.software4_backendv2.dao.UserMapper;
 import com.cqupt.software4_backendv2.entity.CategoryEntity;
 import com.cqupt.software4_backendv2.entity.TableDescribeEntity;
+import com.cqupt.software4_backendv2.entity.User;
 import com.cqupt.software4_backendv2.service.CategoryService;
 import com.cqupt.software4_backendv2.service.TableDescribeService;
 import com.cqupt.software4_backendv2.service.UserService;
+import com.cqupt.software4_backendv2.vo.CheckApprovingVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // TODO 公共模块新增类
 
@@ -67,7 +66,8 @@ public class TableDescribeController {
                                   @RequestParam("uid") String uid,   // 传表中涉及到的用户的uid
                                   @RequestParam("tableStatus") String tableStatus,
                                   @RequestParam("tableSize") Double tableSize,
-                                  @RequestParam("current_uid") String current_uid //操作用户的uid
+                                  @RequestParam("current_uid") String current_uid, //操作用户的uid
+                                  @RequestParam("uid_list") String uid_list
     ){
         // 保存表数据信息
         try {
@@ -80,7 +80,7 @@ public class TableDescribeController {
                 classPath += "/" + categoryEntity.getLabel();
             }
             classPath += "/" + tableName;
-            List<String> featureList = tableDescribeService.uploadDataTable(file, pid, tableName, userName, classPath, uid, tableStatus, tableSize, current_uid);
+            List<String> featureList = tableDescribeService.uploadDataTable(file, pid, tableName, userName, classPath, uid, tableStatus, tableSize, current_uid,uid_list);
             return Result.success("200",featureList); // 返回表头信息
         }catch (Exception e){
             e.printStackTrace();
@@ -157,24 +157,35 @@ public class TableDescribeController {
 
     @GetMapping("/selectDataById")
     public Result<TableDescribeEntity> selectDataById(
-            @RequestParam("id") String id){
-        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(id);
-//        System.out.println("数据为："+ JSON.toJSONString(tableDescribeEntity));
+            @RequestParam("id") String id
+    ){
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(id); // 根据id获取table_describe表的那一行
+        Map<String, Object> ret =  new HashMap<>();
+        ret.put("object", adminDataManage);
 
-        return Result.success("200",adminDataManage);
+        CategoryEntity categoryEntity = categoryMapper.selectById(adminDataManage.getTableId());// 根据id获取table_describe表的table_id与category形成映射
+        List<String> pids = new ArrayList<>();
+        while (!categoryEntity.getParentId().equals("1")){ // 筛选除疾病列表结点的下面结点
+            categoryEntity = categoryMapper.selectById(categoryEntity.getParentId());
+            pids.add(categoryEntity.getId()); // 迭代添加父节点id
+        }
+        Collections.reverse(pids); // 反转，使得父节点id在前面
+
+        ret.put("ids", pids); // 包含疾病结点的id，不包含表id
+        return Result.success("200",ret);
     }
 
-
-    @GetMapping("/updateAdminDataManage")
+    @PostMapping("/updateAdminDataManage")
     public Result<TableDescribeEntity> updateAdminDataManage(
             @RequestParam("id") String id,
             @RequestParam("tableid") String tableid,
             @RequestParam("oldTableName") String oldTableName,
             @RequestParam("tableName") String tableName,
-            @RequestParam("tableStatus") String tableStatus
+            @RequestParam("tableStatus") String tableStatus,
+            @RequestParam("pids") String[] pids,  // 父节点id列表
+            @RequestParam("current_uid") String current_uid
     ){
-        tableDescribeService.updateInfo(id, tableid, oldTableName, tableName, tableStatus);
-
+        tableDescribeService.updateInfo(id, tableid, oldTableName, tableName, tableStatus, pids, current_uid);
         return Result.success("200","已经更改到数据库");
     }
 
@@ -212,4 +223,144 @@ public class TableDescribeController {
         userMapper.recoveryUpdateUserColumnById(uid, tableSize);
         return Result.success("200","已在数据库中删除了"+tableName+"表");
     }
+
+    @GetMapping("/selectUsernamesById")
+    public Result<TableDescribeEntity> selectUsernamesById(
+            @RequestParam("id") String id
+    ){
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(id); // 根据id获取table_describe表的那一行
+        String checkApproving = adminDataManage.getCheckApproving();
+        if (checkApproving == null || checkApproving.length() == 0){
+            return Result.fail(501, "没有申请人",null);
+        }
+        String[] approvingUsernames = checkApproving.split(",");
+
+        List<CheckApprovingVo> checkApprovingVos = new ArrayList<>();
+
+
+        for( String username: approvingUsernames){
+            // 添加查询条件，假设我们要搜索 username 为 "testUser" 的用户
+            // 使用 QueryWrapper 构建查询条件
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("username", username);
+            User user = userMapper.selectOne(queryWrapper);
+
+            CheckApprovingVo checkApprovingVo = new CheckApprovingVo();
+            checkApprovingVo.setUsername(user.getUsername());
+            checkApprovingVo.setUid(user.getUid());
+            checkApprovingVo.setClasspath(adminDataManage.getClassPath());
+            checkApprovingVos.add(checkApprovingVo);
+        }
+
+        System.out.println(checkApprovingVos);
+
+        return Result.success("200",checkApprovingVos);
+    }
+
+    @GetMapping("/updateCheckApprove")
+    public Result<TableDescribeEntity> updateCheckApprove(
+            @RequestParam("id") String id,
+            @RequestParam("username") String username,
+            @RequestParam("type") int type
+    ){
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(id);
+        // 根据id获取table_describe表的那一行
+        String checkApproving = adminDataManage.getCheckApproving();
+        String checkApproved = adminDataManage.getCheckApproved();
+        String[] approvingUsernames = checkApproving.split(",");
+        List<String> itemList = new ArrayList<>(Arrays.asList(approvingUsernames));
+
+        itemList.remove(username);  // 不管同意还是拒绝下载，都要把他从申请列表中删除
+        if (type == 1){   // 如果同意下载，还需要将他添加到已同意列表中去
+            if (checkApproved == null || checkApproved.length() == 0){
+                checkApproved = username;
+            }else{
+                checkApproved += ","+username;
+            }
+
+        }
+
+        adminDataManage.setCheckApproving(String.join(",", itemList));
+        adminDataManage.setCheckApproved(checkApproved);
+
+        tableDescribeMapper.updateById(adminDataManage);
+        return Result.success("200","成功更改");
+    }
+
+    @GetMapping("/getCheckApprove")
+    public Result<TableDescribeEntity> getCheckApprove(
+            @RequestParam("id") String id,
+            @RequestParam("username") String username
+    ){
+        QueryWrapper<TableDescribeEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("table_id", id);
+        List<TableDescribeEntity> list = tableDescribeService.list(wrapper);
+
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(list.get(0).getId());
+        // 根据id获取table_describe表的那一行
+        String checkApproving = adminDataManage.getCheckApproving();
+        String checkApproved = adminDataManage.getCheckApproved();
+
+        if (checkApproving != null && checkApproving.length() != 0){
+            String[] approvingUsernames = checkApproving.split(",");
+            List<String> approvingItemList = new ArrayList<>(Arrays.asList(approvingUsernames));
+            if (approvingItemList.contains(username)){
+                return Result.success("200","1");
+            }
+        }
+        if (checkApproved != null && checkApproved.length() != 0){
+            String[] approvedUsernames = checkApproved.split(",");
+            List<String> approvedItemList = new ArrayList<>(Arrays.asList(approvedUsernames));
+            if (approvedItemList.contains(username)){
+                return Result.success("200","2");
+            }
+        }
+        return Result.success("500","0");
+
+
+    }
+
+    @GetMapping("/applyCheckApprove")
+    public Result<TableDescribeEntity> applyCheckApprove(
+            @RequestParam("id") String id,
+            @RequestParam("username") String username
+    ){
+        QueryWrapper<TableDescribeEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("table_id", id);
+        List<TableDescribeEntity> list = tableDescribeService.list(wrapper);
+
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(list.get(0).getId());
+        // 根据id获取table_describe表的那一行
+        String checkApproving = adminDataManage.getCheckApproving();
+        if (checkApproving == null || checkApproving.length() == 0){
+            checkApproving = username;
+        }else{
+            checkApproving += ","+username;
+        }
+        adminDataManage.setCheckApproving(checkApproving);
+        tableDescribeMapper.updateById(adminDataManage);
+        return Result.success(username+"成功申请下载数据集"+adminDataManage.getTableName(),"1");
+    }
+
+    @GetMapping("/allowCheckApprove")
+    public Result<TableDescribeEntity> allowCheckApprove(
+            @RequestParam("id") String id,
+            @RequestParam("username") String username
+    ){
+        QueryWrapper<TableDescribeEntity> wrapper = new QueryWrapper<>();
+        wrapper.eq("table_id", id);
+        List<TableDescribeEntity> list = tableDescribeService.list(wrapper);
+
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(list.get(0).getId());  // 根据id获取table_describe表的那一行
+        // 根据id获取table_describe表的那一行
+        String checkApproved = adminDataManage.getCheckApproved();
+        String[] approvedUsernames = checkApproved.split(",");
+        List<String> approvedItemList = new ArrayList<>(Arrays.asList(approvedUsernames));
+        approvedItemList.remove(username);
+        adminDataManage.setCheckApproved(String.join(",", approvedItemList));
+        tableDescribeMapper.updateById(adminDataManage);
+        return Result.success(username+"成功下载数据集"+adminDataManage.getTableName()+"并取消下次下载权限","0");
+//        return Result.success("200",);
+    }
+
 }

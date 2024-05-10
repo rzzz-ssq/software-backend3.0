@@ -2,6 +2,7 @@ package com.cqupt.software4_backendv2.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.cqupt.software4_backendv2.common.Result;
 import com.cqupt.software4_backendv2.dao.*;
@@ -15,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 // TODO 公共模块新增类
 @RestController
@@ -92,7 +90,14 @@ public class CategoryController {
             }
             tableDescribeMapper.delete(new QueryWrapper<TableDescribeEntity>().eq("table_id",categoryEntity.getId()));
             tTableMapper.delete(new QueryWrapper<tTable>().eq("table_name",categoryEntity.getLabel()));
-
+            UserLog userLog = new UserLog();
+            User user = userMapper.selectByUid(categoryEntity.getUid());
+            userLog.setUsername(user.getUsername());
+            userLog.setUid(user.getUid());
+            userLog.setRole(user.getRole());
+            userLog.setTime(new Date());
+            userLog.setOperation("用户删除表"+categoryEntity.getLabel());
+            userLogMapper.insert(userLog);
         }
         return Result.success(200,"删除成功");
     }
@@ -104,11 +109,7 @@ public class CategoryController {
         return Result.success("200",null);
     }
 
-    @GetMapping("/changeStatus")
-    public Result changeStatus(CategoryEntity categoryEntity){
-        categoryService.changeStatus(categoryEntity);
-        return Result.success(200,"修改成功",null);
-    }
+
 
 
     @GetMapping("/inspectionOfIsNotCommon")
@@ -203,4 +204,90 @@ public class CategoryController {
         CategoryEntity category = categoryMapper.selectOne(queryWrapper);
         return category==null?Result.success("200","病种名可用"):Result.fail("400","病种名已存在");
     }
+
+    // 新增可共享用户列表
+    @PostMapping("/category/changeToShare")
+    public Result changeToShare(@RequestBody Map<String, Object> requestData){
+        String nodeid = (String) requestData.get("nodeid");
+        String uid_list = (String) requestData.get("uid_list");
+        CategoryEntity entity = new CategoryEntity();
+        entity.setUidList(uid_list);
+        entity.setStatus("1");
+        UpdateWrapper<CategoryEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", nodeid);
+        int res = categoryMapper.update(entity, updateWrapper);
+        if(res == 1){
+            return Result.success(200,"修改成功");
+        }
+        else {
+            return Result.fail(500,"修改失败");
+        }
+    }
+    //新增可共享用户列表
+    @PostMapping("/category/changeToPrivate")
+    public Result changeToPrivate(@RequestBody Map<String, Object> requestData){
+        String nodeid = (String) requestData.get("nodeid");
+        CategoryEntity entity = new CategoryEntity();
+        entity.setUidList("");
+        entity.setStatus("0");
+        UpdateWrapper<CategoryEntity> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", nodeid);
+        int res = categoryMapper.update(entity, updateWrapper);
+        if(res == 1){
+            return Result.success(200,"修改成功");
+        }
+        else {
+            return Result.fail(500,"修改失败");
+        }
+    }
+    //新增可共享用户列表
+    @PostMapping("/category/getNodeInfo")
+    public Result getNodeInfo(@RequestBody Map<String, Object> requestData){
+        String nodeid = (String) requestData.get("nodeid");
+        String uid = (String) requestData.get("uid");
+
+        QueryWrapper<CategoryEntity> queryWrapper = Wrappers.query();
+        queryWrapper.eq("id",nodeid);
+        CategoryEntity categoryEntity = categoryMapper.selectOne(queryWrapper);
+        String includedUids = categoryEntity.getUidList();
+        //使用 split() 方法返回的数组是一个固定长度的数组，无法修改其大小。
+        //可以使用 Arrays.asList() 方法将数组转换为 ArrayList，然后再添加额外的元素。
+        List<String> includedUidList = new ArrayList<>(Arrays.asList(includedUids.split(",")));
+
+        includedUidList.add(uid);
+
+        QueryWrapper<User> userQueryWrapper1 = new QueryWrapper<>();
+        userQueryWrapper1.notIn("uid", includedUidList);
+        List<User> excludeUserList = userMapper.selectList(userQueryWrapper1);
+
+        QueryWrapper<User> userQueryWrapper2 = new QueryWrapper<>();
+        includedUidList.remove(uid);
+        userQueryWrapper2.in("uid", includedUidList);
+        List<User> includeUserList = userMapper.selectList(userQueryWrapper2);
+
+
+        //
+        List<String> tempRes = new ArrayList<>();
+        List<Map<String, Object>> included = new ArrayList<>();
+        for (User user : includeUserList) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("key", user.getUid());
+            resultMap.put("label", user.getUsername());
+            tempRes.add(user.getUid());
+            included.add(resultMap);
+        }
+
+
+        List<Map<String, Object>> excluded = new ArrayList<>();
+        for (User user : excludeUserList) {
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("key", user.getUid());
+            resultMap.put("label", user.getUsername());
+            excluded.add(resultMap);
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("included", included);
+        result.put("excluded", excluded);
+        return  Result.success(200,"操作成功", tempRes);
+        }
 }

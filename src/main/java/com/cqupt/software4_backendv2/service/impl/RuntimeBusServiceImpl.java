@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,6 +25,11 @@ public class RuntimeBusServiceImpl implements RuntimeBusService {
     @Value("${algorithm.py.path3}")
     private String algorithmPyPath3;
 
+    @Value("src/main/resources/Scripts/traditional_statistic.py")
+    private String tradition_statstic_scriptPyPath;
+
+    @Value("src/main/resources/Scripts/PC_mutual_info_regression.py")
+    private String pc_algorithm_scriptPyPath;
     @Resource
     private RuntimeTaskService runtimeTaskService;
 
@@ -100,6 +106,48 @@ public class RuntimeBusServiceImpl implements RuntimeBusService {
         runtimeTaskRequest.setPyPath(algorithmPyPath1);
         runtimeTaskRequest.setArgs(args);
         RuntimeTaskResponse taskResponse=runtimeTaskService.submitTask(runtimeTaskRequest);
+        response.setRes(taskResponse.getRes());
+        return response;
+    }
+
+    @Override
+    public RuntimeBusServiceResponse traditional_statistic(RuntimeBusCreateRequest request) throws Exception {
+        RuntimeBusServiceResponse response=new RuntimeBusServiceResponse();
+        String[] targets = request.getTargetcolumn();
+        String[] CalculatedColumn = request.getFea();
+        List<String> args=new LinkedList<>();
+        // String []是java的一个对象，需要解析
+        String targetcolumn = "--targetcolumn=" +  String.join(" ", targets);
+        String feacolumn = "--calculatedColumns=" +  String.join(" ", CalculatedColumn);
+        args.add(targetcolumn);
+        args.add(feacolumn);
+        args.add("--tableName="+request.getTablename());
+        System.out.println(args);
+        RuntimeTaskRequest runtimeTaskRequest=new RuntimeTaskRequest();
+        runtimeTaskRequest.setPyPath(tradition_statstic_scriptPyPath);
+        runtimeTaskRequest.setArgs(args);
+        RuntimeTaskResponse taskResponse=runtimeTaskService.submitTraditonalStastic(runtimeTaskRequest);
+        response.setRes(taskResponse.getRes());
+        return response;
+    }
+
+    @Override
+    public RuntimeBusServiceResponse pc_algorithm(RuntimeBusCreateRequest request) throws Exception {
+        RuntimeBusServiceResponse response=new RuntimeBusServiceResponse();
+        String[] targets = request.getTargetcolumn();
+        String[] CalculatedColumn = request.getFea();
+        List<String> args=new LinkedList<>();
+        // String []是java的一个对象，需要解析
+        String targetcolumn = "--targetcolumn=" +  String.join(" ", targets);
+        String feacolumn = "--calculatedColumns=" +  String.join(" ", CalculatedColumn);
+        args.add(targetcolumn);
+        args.add(feacolumn);
+        args.add("--tableName="+request.getTablename());
+
+        RuntimeTaskRequest runtimeTaskRequest=new RuntimeTaskRequest();
+        runtimeTaskRequest.setPyPath(pc_algorithm_scriptPyPath);
+        runtimeTaskRequest.setArgs(args);
+        RuntimeTaskResponse taskResponse=runtimeTaskService.submitPcAlogrithm(runtimeTaskRequest);
         response.setRes(taskResponse.getRes());
         return response;
     }

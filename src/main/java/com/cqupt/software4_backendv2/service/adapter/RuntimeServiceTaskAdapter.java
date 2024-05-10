@@ -17,4 +17,14 @@ public class RuntimeServiceTaskAdapter implements RuntimeTaskService {
         return null;
     }
 
+    @Override
+    public RuntimeTaskResponse submitTraditonalStastic(RuntimeTaskRequest request) throws Exception {
+        return null;
+    }
+
+    @Override
+    public RuntimeTaskResponse submitPcAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception {
+        return null;
+    }
+
 }

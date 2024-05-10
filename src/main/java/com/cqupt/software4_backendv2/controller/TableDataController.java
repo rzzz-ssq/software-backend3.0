@@ -4,19 +4,19 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cqupt.software4_backendv2.common.Result;
 import com.cqupt.software4_backendv2.dao.StasticOneMapper;
+import com.cqupt.software4_backendv2.dao.UserLogMapper;
 import com.cqupt.software4_backendv2.entity.CategoryEntity;
+import com.cqupt.software4_backendv2.entity.UserLog;
 import com.cqupt.software4_backendv2.service.*;
 import com.cqupt.software4_backendv2.vo.FilterTableDataVo;
 
+import org.python.antlr.op.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // TODO 公共模块新增类
 
@@ -34,6 +34,8 @@ public class TableDataController {
     CategoryService categoryService;
     @Autowired
     TableDescribeService tableDescribeService;
+    @Autowired
+    UserLogMapper userLogMapper;
     @GetMapping("/getTableData")
     public Result getTableData(@RequestParam("tableId") String tableId, @RequestParam("tableName") String tableName){
         System.out.println("tableId=="+tableId+"   tableName=="+tableName);
@@ -42,6 +44,7 @@ public class TableDataController {
     }
 
     // 文件上传
+    // 新增可共享用户列表
     @PostMapping("/dataTable/upload")
     public Result uploadFile(@RequestParam("file") MultipartFile file,
                              @RequestParam("newName") String tableName,
@@ -53,13 +56,26 @@ public class TableDataController {
                              @RequestParam("status") String status,
                              @RequestParam("size") Double size,
                              @RequestParam("is_upload") String is_upload,
-                             @RequestParam("is_filter") String is_filter){
+                             @RequestParam("is_filter") String is_filter,
+                             @RequestParam("uid_list") String uid_list,
+                             @RequestHeader("username") String username,
+                             @RequestHeader("role") Integer role){
         // 保存表数据信息
         try {
             System.out.println(userId);
             List<String> featureList = tableDataService.ParseFileCol(file,tableName);
-            tableDataService.uploadFile(file, tableName, type, user, userId, parentId, parentType,status,size,is_upload,is_filter);
-            return Result.success("200",featureList); // 返回表头信息
+            Map<String,Object> res = new HashMap<>();
+            res.put("featureList",featureList);
+            tableDataService.uploadFile(file, tableName, type, user, userId, parentId, parentType,status,size,is_upload,is_filter,uid_list);
+            UserLog userLog = new UserLog();
+
+            userLog.setUsername(username);
+            userLog.setUid(userId);
+            userLog.setRole(role);
+            userLog.setTime(new Date());
+            userLog.setOperation("用户上传表"+tableName);
+            userLogMapper.insert(userLog);
+            return Result.success("200",res); // 返回表头信息
         }catch (Exception e){
             e.printStackTrace();
             return Result.fail(500,"文件上传异常");
@@ -67,6 +83,7 @@ public class TableDataController {
     }
 
         // 解析文件列信息
+        // 新增可共享用户列表
         @PostMapping("/dataTable/parseAndUpload")
         public Result ParseFileCol(@RequestParam("file") MultipartFile file,
                                    @RequestParam("newName") String tableName,
@@ -75,11 +92,11 @@ public class TableDataController {
                                    @RequestParam("uid") String userId,
                                    @RequestParam("parentId") String parentId,
                                    @RequestParam("parentType") String parentType,@RequestParam("status") String status,@RequestParam("size") Double size,@RequestParam("is_upload") String is_upload,
-                                   @RequestParam("is_filter") String is_filter){
+                                   @RequestParam("is_filter") String is_filter,@RequestParam("uid_list") String uid_list){
             // 保存表数据信息
             try {
-                List<String> featureList = tableDataService.uploadFile(file, tableName, type, user, userId, parentId, parentType,status,size,is_upload,is_filter);
-                return Result.success("200",featureList); // 返回表头信息
+                Map<String,Object> res= tableDataService.uploadFile(file, tableName, type, user, userId, parentId, parentType,status,size,is_upload,is_filter,uid_list);
+                return Result.success("200",res); // 返回表头信息
             }catch (Exception e){
                 e.printStackTrace();
                 return Result.fail(500,"文件解析失败");
@@ -113,12 +130,23 @@ public class TableDataController {
 
 
     // 筛选数据后，创建表保存筛选后的数据
+    // 新增可共享用户列表
     @PostMapping("/createTable")
-    public Result createTable(@RequestBody FilterTableDataVo filterTableDataVo){
-
+    public Result createTable(@RequestBody FilterTableDataVo filterTableDataVo,
+                              @RequestHeader("uid") String userId,
+                              @RequestHeader("username") String username,
+                              @RequestHeader("role") Integer role){
+        System.out.println(filterTableDataVo);
         tableDataService.createTable(filterTableDataVo.getAddDataForm().getDataName(),filterTableDataVo.getAddDataForm().getCharacterList(),
-                filterTableDataVo.getAddDataForm().getCreateUser(),filterTableDataVo.getNodeData(),filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername(),filterTableDataVo.getAddDataForm().getIsFilter(),filterTableDataVo.getAddDataForm().getIsUpload());
-        System.out.println("开始新建表："+JSON.toJSONString(filterTableDataVo));
+                filterTableDataVo.getAddDataForm().getCreateUser(),filterTableDataVo.getNodeData(),filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername(),filterTableDataVo.getAddDataForm().getIsFilter(),filterTableDataVo.getAddDataForm().getIsUpload(),filterTableDataVo.getAddDataForm().getUid_list());
+        UserLog userLog = new UserLog();
+        // userLog.setId(1);
+        userLog.setUsername(username);
+        userLog.setUid(userId);
+        userLog.setRole(role);
+        userLog.setTime(new Date());
+        userLog.setOperation("用户建表"+filterTableDataVo.getAddDataForm().getDataName());
+        userLogMapper.insert(userLog);
         return Result.success(200,"SUCCESS");
     }
 

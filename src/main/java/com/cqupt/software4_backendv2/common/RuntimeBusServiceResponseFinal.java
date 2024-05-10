@@ -15,6 +15,7 @@ public class RuntimeBusServiceResponseFinal {
     private Double ratio;
     private String stu;
     private List<List<String>> res;
+    private List<List<Double>> resWeights;
     private Integer ci;
     private Double time;
     private Map<Object,Object> treeRes;

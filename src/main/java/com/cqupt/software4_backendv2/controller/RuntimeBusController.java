@@ -4,13 +4,16 @@ import com.cqupt.software4_backendv2.common.*;
 import com.cqupt.software4_backendv2.service.RuntimeBusService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import javax.annotation.Resource;
 import java.util.*;
-
+import java.lang.reflect.Type;
 @Log4j2
 @RestController
 @RequestMapping("/runtime_bus")
@@ -145,5 +148,46 @@ public class RuntimeBusController {
 
     }
 
+
+    @PostMapping("/traditional_statistic")
+    public Result traditional_statistic(@RequestBody RuntimeBusCreateRequest request) throws Exception {
+        List<String>  targetList = Arrays.asList(request.getTargetcolumn());
+        RuntimeBusServiceResponse result = runtimeBusService.traditional_statistic(request);
+        return Result.success(result);
+    }
+
+    @PostMapping("/pc_algorithm")
+    public Result pc_algorithm(@RequestBody RuntimeBusCreateRequest request) throws Exception {
+        List<String>  targetList = Arrays.asList(request.getTargetcolumn());
+        RuntimeBusServiceResponse result = runtimeBusService.pc_algorithm(request);
+        String JsonRes= result.getRes().get(0).toString();
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+        List<Map<String, Object>> data = gson.fromJson(JsonRes, listType);
+
+        List<List<String>> resDoubleList = new ArrayList<>();
+        List<List<Double>> weightDoubleList = new ArrayList<>();
+        for (String tar: targetList){
+            for (Map<String, Object> map: data) {
+                if(map.get("targetcol").equals(tar)){
+                    List<Map<String,Double>> res = (List<Map<String, Double>>) map.get("res");
+                    for (Map<String, Double> tempres:res){
+                        Set<String> keys = tempres.keySet();
+                        for (String key : keys) {
+                            resDoubleList.add(Collections.singletonList(key));
+                        }
+                        Collection<Double> values = tempres.values();  // 获取所有值的集合
+                        for (Double value : values) {
+                            weightDoubleList.add(Collections.singletonList(value));
+                        }
+                    }
+                }
+            }
+        }
+        RuntimeBusServiceResponseFinal res = new RuntimeBusServiceResponseFinal();
+        res.setResWeights(weightDoubleList);
+        res.setRes(resDoubleList);
+        return Result.success(res);
+    }
 
 }

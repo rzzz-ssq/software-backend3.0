@@ -27,6 +27,7 @@ public class PythonScriptController {
     @Value("src/main/resources/Scripts/get_statics.py")
     private String scriptPyPath;
 
+
     @Resource
     private RuntimeTaskService runtimeTaskService;
 
@@ -76,4 +77,5 @@ public class PythonScriptController {
         RuntimeTaskResponse taskResponse=runtimeTaskService.submitStastic(runtimeTaskRequest);
         return Result.success(taskResponse.getRes());
     }
+
 }

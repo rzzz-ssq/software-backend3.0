@@ -67,7 +67,7 @@ public class TableDescribeServiceImpl extends ServiceImpl<TableDescribeMapper, T
 
     @Override
     @Transactional
-    public List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize,String current_id) throws IOException, ParseException {
+    public List<String> uploadDataTable(MultipartFile file, String pid, String tableName, String userName, String classPath, String uid, String tableStatus, Double tableSize,String current_id,String uid_list) throws IOException, ParseException {
         // 封住表描述信息
         TableDescribeEntity adminDataManageEntity = new TableDescribeEntity();
         CategoryEntity categoryEntity = new CategoryEntity();
@@ -81,6 +81,7 @@ public class TableDescribeServiceImpl extends ServiceImpl<TableDescribeMapper, T
         categoryEntity.setUsername(userName);
         categoryEntity.setIsUpload("1");
         categoryEntity.setIsFilter("0");
+        categoryEntity.setUidList(uid_list);
         System.out.println("==categoryEntity==" + categoryEntity );
         categoryMapper.insert(categoryEntity);
 
@@ -130,31 +131,41 @@ public class TableDescribeServiceImpl extends ServiceImpl<TableDescribeMapper, T
     }
 
     @Override
-    public void updateById(String id, String tableName, String tableStatus) {
-        TableDescribeEntity adminDataManage = tableDescribeMapper.selectById(id);
-        String classPath = adminDataManage.getClassPath();
-        String[] str = classPath.split("/");
-        str[str.length-1] = tableName;
-        classPath = String.join("/", str);
-        adminDataManage.setClassPath(classPath);
-        adminDataManage.setTableName(tableName);
-        adminDataManage.setTableStatus(tableStatus);
-        tableDescribeMapper.updateById(adminDataManage);
-//        adminDataManageMapper.updateById(id, tableName, tableStatus);
-    }
-
-    @Override
     public void updateDataBaseTableName(String old_name, String new_name){
         tableDescribeMapper.updateDataBaseTableName(old_name, new_name);
     }
 
     @Override
-    @Transactional
-    public void updateInfo(String id, String tableid, String oldTableName, String tableName, String tableStatus) {
-        updateById(id, tableName, tableStatus);
-        categoryMapper.updateTableNameByTableId(tableid, tableName, tableStatus);
-        updateDataBaseTableName(oldTableName, tableName);
+    public void updateById(String id, String[] pids, String tableName, String tableStatus) {
+        TableDescribeEntity adminDataManage = tableDescribeMapper.selectById(id);  // 在table_describe表中获取表id对应的那一行数据
+
+//        设置class_path
+        String classPath = "公共数据集";
+        for (String pid : pids){
+            CategoryEntity categoryEntity = categoryMapper.selectById(pid);
+            classPath += "/" + categoryEntity.getLabel();
+        }
+        classPath += "/" + tableName;
+
+        adminDataManage.setClassPath(classPath);
+        adminDataManage.setTableName(tableName);
+        adminDataManage.setTableStatus(tableStatus);
+
+        CategoryEntity categoryEntity = categoryMapper.selectById(adminDataManage.getTableId());
+        categoryEntity.setParentId(pids[pids.length-1]);
+        categoryMapper.updateById(categoryEntity); // 更改category表
+        tableDescribeMapper.updateById(adminDataManage);// 更改table_describe表
     }
 
+    @Override
+    @Transactional
+    public void updateInfo(String id, String tableid, String oldTableName, String tableName, String tableStatus, String[] pids, String current_uid) {
+        updateById(id, pids, tableName, tableStatus);
+        categoryMapper.updateTableNameByTableId(tableid, tableName, tableStatus);
+        if (!oldTableName.equals(tableName)){
+            updateDataBaseTableName(oldTableName, tableName);
+
+        }
+    }
 
 }
