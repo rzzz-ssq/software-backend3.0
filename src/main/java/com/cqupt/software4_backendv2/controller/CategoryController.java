@@ -13,6 +13,7 @@ import com.cqupt.software4_backendv2.vo.AddDiseaseVo;
 import com.cqupt.software4_backendv2.vo.DeleteDiseaseVo;
 import com.cqupt.software4_backendv2.vo.UpdateDiseaseVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;

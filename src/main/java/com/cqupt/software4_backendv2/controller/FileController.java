@@ -10,8 +10,6 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/file")
 public class FileController {
-    @Value("${file.path}")
-    private String dirPath;
 
     @Value("software4opt.docx")
     private String optFileName;

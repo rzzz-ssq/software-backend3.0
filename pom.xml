@@ -188,7 +188,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.cqupt.software4_backendv2.Software4BackendV2Application</mainClass>
-                    <skip>true</skip>
+                    <layout>JAR</layout>
                 </configuration>
                 <executions>
                     <execution>

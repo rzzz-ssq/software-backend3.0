@@ -6,17 +6,27 @@ from pgmpy.estimators import PC
 from sklearn.feature_selection import mutual_info_regression
 from sklearn.impute import SimpleImputer
 from sqlalchemy import create_engine
-
+import psycopg2
 # 加载数据
 def read_data_from_postgresql(tableName):
     host = "10.16.48.219"
     user = "pg"
     password = "111111"
     database = "software4V2"
-    db_uri = f"postgresql://{user}:{password}@{host}/{database}"
-    engine = create_engine(db_uri)
-    query = f'SELECT * FROM "{tableName}";'
-    data = pd.read_sql(query, engine)
+    port="5432"
+    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port,
+                            options='-c client_encoding=utf-8')
+    cursor = conn.cursor()
+
+    # 执行SQL查询，获取表数据
+    query = f'SELECT * FROM "{tableName}";'  # 使用双引号包围表名
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    # 获取字段名
+    field_names = [desc[0] for desc in cursor.description]
+
+    # 将查询结果转换为DataFrame对象
+    data = pd.DataFrame(rows, columns=field_names)
 
     # 数据预处理逻辑
     max_numeric_length = 10
@@ -35,7 +45,8 @@ def read_data_from_postgresql(tableName):
     data_imputed = df_median.fit_transform(data[numeric_cols])
     data_imputed = pd.DataFrame(data_imputed, columns=numeric_cols)
     data.update(data_imputed)
-
+    cursor.close()
+    conn.close()
     return data
 
 # 命令行参数解析
@@ -47,7 +58,7 @@ args = parser.parse_args()
 
 tableName = args.tableName
 features = args.calculatedColumns[0].split(" ")
-labels = args.targetcolumn
+labels = args.targetcolumn[0].split(" ")
 
 data = read_data_from_postgresql(tableName)
 data_filtered = data[labels + features]

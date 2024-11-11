@@ -7,9 +7,9 @@
     <!--void createTable(@Param("headers") String[] headers,@Param("tableName") String tableName);
         void uploadDataTable(AdminDataManage dataTable);-->
     <update id="createTable">
-        create table ${tableName} (
+        create table "${tableName}" (
         <foreach collection="headers" item="columnName" separator=",">
-            ${columnName} VARCHAR(255)
+            "${columnName}" VARCHAR(255)
         </foreach>
         );
     </update>

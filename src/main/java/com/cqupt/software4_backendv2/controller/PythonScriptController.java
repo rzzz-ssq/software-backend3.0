@@ -6,7 +6,6 @@ import com.cqupt.software4_backendv2.common.RuntimeTaskRequest;
 import com.cqupt.software4_backendv2.common.RuntimeTaskResponse;
 import com.cqupt.software4_backendv2.service.RuntimeTaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.internal.org.objectweb.asm.TypeReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class PythonScriptController {
         Process process = null;
         try {
             process = Runtime.getRuntime()
-                    .exec("D:\\pythonMachineLearning\\venv\\Scripts\\python.exe src/main/resources/Scripts/get_fill_rate.py "+tablename);  // 确保提供正确的Python脚本路径和Python解释器
+                    .exec("C:\\Users\\hp-pc\\AppData\\Local\\Programs\\Python\\Python39\\python.exe src/main/resources/Scripts/get_fill_rate.py "+tablename);  // 确保提供正确的Python脚本路径和Python解释器
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));
 

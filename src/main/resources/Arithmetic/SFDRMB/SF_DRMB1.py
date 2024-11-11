@@ -55,21 +55,20 @@ def read_data_from_postgresql(tableName):
     user = "pg"
     password = "111111"
     database = "software4V2"
+    port="5432"
+    conn = psycopg2.connect(database=database, user=user, password=password, host=host, port=port,
+                            options='-c client_encoding=utf-8')
+    cursor = conn.cursor()
 
-    # 创建数据库连接字符串
-    db_uri = f"postgresql://{user}:{password}@{host}/{database}"
+    # 执行SQL查询，获取表数据
+    query = f'SELECT * FROM "{tableName}";'  # 使用双引号包围表名
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    # 获取字段名
+    field_names = [desc[0] for desc in cursor.description]
 
-    # 创建 SQLAlchemy 引擎
-    engine = create_engine(db_uri)
-
-    # 读取数据到DataFrame
-    # query = f"SELECT * FROM {tableName} WHERE \"{tar}\" IS NOT NULL"
-    # for field in caculateList:
-    #     query += f" AND \"{field}\" IS NOT NULL"
-    # data = pd.read_sql(query, engine)
-    #query = f'SELECT "age", "sexcode", "MPV", "P_LCR", "PDW", "PCT", "EO_num", "BASO_num", "RBC", "HGB", "NEUT_per", "LYMPH_per", "WBC", "NEUT_num", "HCT", "LYMPH_num", "MONO_per", "EO_per", "MONO_num", "BASO_per", "RDW_SD", "RDW_CV", "PLT", "temperature", "nationcode", "maritalstatuscode", "occupationcategorycode", "nationalitycode", "edubackgroundcode", "age" FROM merge;'
-    query = f'SELECT * FROM "{tableName}";'
-    data = pd.read_sql(query, engine)
+    # 将查询结果转换为DataFrame对象
+    data = pd.DataFrame(rows, columns=field_names)
     base_data = data
     max_numeric_length = 10  # 设定阈值为10
     for col in data.columns:
@@ -95,7 +94,8 @@ def read_data_from_postgresql(tableName):
     data_imputed = pd.DataFrame(data_imputed,columns=numeric_cols)
 
     base_data.update(data_imputed)
-
+    cursor.close()
+    conn.close()
     return base_data
 
 # SF_DRMB共分三个阶段: 阶段1：同时发现PC和SP，阶段2：恢复可能遗漏的节点，阶段3删除阶段1假阳性节点

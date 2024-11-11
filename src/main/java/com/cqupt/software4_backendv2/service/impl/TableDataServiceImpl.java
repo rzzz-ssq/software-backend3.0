@@ -130,11 +130,14 @@ public class TableDataServiceImpl implements TableDataService {
         List<FieldManagementEntity> fields = fieldManagementService.list(null);
         // System.out.println("字段长度为："+fields.size());
         HashMap<String, String> fieldMap = new HashMap<>();
+        ArrayList<String> featureList = new ArrayList<String>();
         for (FieldManagementEntity field : fields) {
+            featureList.add(field.getFeatureName());
             fieldMap.put(field.getFeatureName(),field.getUnit());
         }
+        System.out.println("字段管理信息为："+fieldMap);
         // TODO 创建表头信息
-        tableDataMapper.createTableByField(tableName,fieldMap);
+        tableDataMapper.createTableByField(tableName,featureList);
         // TODO 数据保存 批量插入
         // TODO 保证value值数量与字段个数一致
         for (Map<String, Object> diseaseDatum : diseaseData) {
@@ -193,7 +196,7 @@ public class TableDataServiceImpl implements TableDataService {
 
 
     }
-
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void createFilterBtnTable(String tableName, List<CreateTableFeatureVo> characterList, String createUser, String status, String uid, String username, String IsFilter, String IsUpload, String uid_list,String nodeid) {
         /**
@@ -214,6 +217,7 @@ public class TableDataServiceImpl implements TableDataService {
 
         CategoryEntity nodeData = categoryMapper.selectById(nodeid);
         List<LinkedHashMap<String, Object>> res = getFilterDataByConditionsByDieaseId(characterList,uid,username,nodeid);
+        System.out.println("getFilterDataByConditionsByDieaseId over");
 //        CategoryEntity mustContainNode = getBelongType(nodeData, new ArrayList<CategoryEntity>());
 //        // 查询考虑疾病的宽表数据
         //List<LinkedHashMap<String,Object>> diseaseData = tableDataMapper.getAllTableData("merge"); // 传递表名参数
@@ -223,15 +227,47 @@ public class TableDataServiceImpl implements TableDataService {
 //        for (LinkedHashMap<String, Object> re : res) {
 //            diseaseData.add(re);
 //        }
+//        // 创建表头信息 获取宽表字段管理信息
+//        List<FieldManagementEntity> fields = fieldManagementService.list(null);
+//        HashMap<String, String> fieldMap = new HashMap<>();
+//        ArrayList<String> featureList = new ArrayList<String>();
+//        for (FieldManagementEntity field : fields) {
+//            fieldMap.put(field.getFeatureName(),field.getUnit());
+//            featureList.add(field.getFeatureName());
+//        }
+//        System.out.println(featureList.size());
+
         // 创建表头信息 获取宽表字段管理信息
         List<FieldManagementEntity> fields = fieldManagementService.list(null);
-        // System.out.println("字段长度为："+fields.size());
         HashMap<String, String> fieldMap = new HashMap<>();
+        ArrayList<String> featureList = new ArrayList<String>();
+        HashMap<String, Integer> featureCountMap = new HashMap<>(); // 用于记录 FeatureName 出现的次数
+
         for (FieldManagementEntity field : fields) {
-            fieldMap.put(field.getFeatureName(),field.getUnit());
+            String featureName = field.getFeatureName();
+
+            // 检查 featureCountMap 是否已经包含该 FeatureName
+            if (featureCountMap.containsKey(featureName)) {
+                // 如果包含，增加计数并构造新的 FeatureName
+                int count = featureCountMap.get(featureName) + 1;
+                featureCountMap.put(featureName, count);
+
+                // 构造新的 FeatureName
+                featureName = featureName + "_" + count;
+            } else {
+                // 如果不包含，初始计数为1
+                featureCountMap.put(featureName, 1);
+            }
+
+            // 将修改后的 FeatureName 放入 featureList 和 fieldMap
+            fieldMap.put(featureName, field.getUnit());
+            featureList.add(featureName);
         }
+
+        System.out.println(featureList.size());
+
         // TODO 创建表头信息
-        tableDataMapper.createTableByField(tableName,fieldMap);
+        tableDataMapper.createTableByField(tableName,featureList);
         // TODO 数据保存 批量插入
         // TODO 保证value值数量与字段个数一致
         for (Map<String, Object> diseaseDatum : diseaseData) {
@@ -289,18 +325,7 @@ public class TableDataServiceImpl implements TableDataService {
         tableDescribeMapper.insert(tableDescribeEntity);
 
     }
-    //待修改
-//    private CategoryEntity getBelongType(CategoryEntity nodeData, ArrayList<CategoryEntity> leafNodes){
-//        getLeafNode(nodeData, leafNodes);
-//        if(leafNodes!=null && leafNodes.size()>0){
-//            for (CategoryEntity leafNode : leafNodes) {
-//                if(leafNode.getIsWideTable()!=null && leafNode.getIsWideTable()==1) {
-//                    return leafNode;
-//                }
-//            }
-//        }
-//        return null;
-//    }
+
 
     @Override
     public List<LinkedHashMap<String, Object>> getFilterDataByConditionsWhenCreateTable(List<CreateTableFeatureVo> characterList,CategoryEntity nodeData,String uid,String username) {
@@ -531,9 +556,17 @@ public class TableDataServiceImpl implements TableDataService {
                 createTableFeatureVo.setValue("'"+createTableFeatureVo.getValue()+"'");
             }
         }
+
         List<List<LinkedHashMap<String, Object>>> otherWideTableData = new ArrayList<>();
         ArrayList<LinkedHashMap<String, Object>> res = new ArrayList<>();
+        System.out.println("ok1");
+        for (int i = 0; i < characterList.size(); i++)
+        {
+            System.out.println("characterList"+characterList.get(i));
+        }
         otherWideTableData.add(tableDataMapper.getFilterData("merge",characterList));
+        System.out.println("ok2");
+        System.out.println("otherWideTableData:"+otherWideTableData);
         ArrayList<LinkedHashMap<String, Object>> res2 = new ArrayList<>();
         for (List<LinkedHashMap<String, Object>> otherWideTableDatum : otherWideTableData) {
             for (LinkedHashMap<String, Object> rowData : otherWideTableDatum) {

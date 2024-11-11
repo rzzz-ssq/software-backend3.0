@@ -287,6 +287,36 @@ public class TableDescribeController {
         return Result.success("200","成功更改");
     }
 
+    @GetMapping("/updateCheckApproves")
+    public Result<TableDescribeEntity> updateCheckApproves(
+            @RequestParam("id") String id,
+            @RequestParam("multipleSelection") String multipleSelection,
+            @RequestParam("type") int type
+    ){
+        TableDescribeEntity adminDataManage = tableDescribeService.selectDataById(id);
+        // 根据id获取table_describe表的那一行
+        String checkApproving = adminDataManage.getCheckApproving();
+        String checkApproved = adminDataManage.getCheckApproved();
+        String[] approvingUsernames = checkApproving.split(",");
+        List<String> itemList = new ArrayList<>(Arrays.asList(approvingUsernames));
+
+        String[] selectionNames = multipleSelection.split(",");
+        for (String username: selectionNames) {
+            itemList.remove(username);  // 不管同意还是拒绝下载，都要把他从申请列表中删除
+            if (type == 1){   // 如果同意下载，还需要将他添加到已同意列表中去
+                if (checkApproved == null || checkApproved.length() == 0){
+                    checkApproved = username;
+                }else{
+                    checkApproved += ","+username;
+                }
+            }
+        }
+        adminDataManage.setCheckApproving(String.join(",", itemList));
+        adminDataManage.setCheckApproved(checkApproved);
+        tableDescribeMapper.updateById(adminDataManage);
+        return Result.success("200","成功更改");
+    }
+
     @GetMapping("/getCheckApprove")
     public Result<TableDescribeEntity> getCheckApprove(
             @RequestParam("id") String id,

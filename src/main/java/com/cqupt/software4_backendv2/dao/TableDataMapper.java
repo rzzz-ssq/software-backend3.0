@@ -19,7 +19,7 @@ public interface TableDataMapper {
 
     List<LinkedHashMap<String, Object>> getFilterData(@Param("tableName") String label, @Param("conditions") List<CreateTableFeatureVo> characterList);
 
-    void createTableByField(@Param("tableName") String tableName, @Param("fieldMap") HashMap<String, String> fieldMap);
+    void createTableByField(@Param("tableName") String tableName, @Param("featureList") ArrayList<String> featureList);
 
     void bachInsertData(@Param("diseaseData") List<LinkedHashMap<String, Object>> diseaseData,@Param("tableName") String tableName);
 

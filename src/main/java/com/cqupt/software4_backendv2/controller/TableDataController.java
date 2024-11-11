@@ -148,14 +148,14 @@ public class TableDataController {
         System.out.println(filterTableDataVo);
         tableDataService.createTable(filterTableDataVo.getAddDataForm().getDataName(),filterTableDataVo.getAddDataForm().getCharacterList(),
                 filterTableDataVo.getAddDataForm().getCreateUser(),filterTableDataVo.getNodeData(),filterTableDataVo.getAddDataForm().getUid(),filterTableDataVo.getAddDataForm().getUsername(),filterTableDataVo.getAddDataForm().getIsFilter(),filterTableDataVo.getAddDataForm().getIsUpload(),filterTableDataVo.getAddDataForm().getUid_list());
-        UserLog userLog = new UserLog();
-        // userLog.setId(1);
-        userLog.setUsername(username);
-        userLog.setUid(userId);
-        userLog.setRole(role);
-        userLog.setTime(new Date());
-        userLog.setOperation("用户建表"+filterTableDataVo.getAddDataForm().getDataName());
-        userLogMapper.insert(userLog);
+//        UserLog userLog = new UserLog();
+//        // userLog.setId(1);
+//        userLog.setUsername(username);
+//        userLog.setUid(userId);
+//        userLog.setRole(role);
+//        userLog.setTime(new Date());
+//        userLog.setOperation("用户建表"+filterTableDataVo.getAddDataForm().getDataName());
+//        userLogMapper.insert(userLog);
         return Result.success(200,"SUCCESS");
     }
 

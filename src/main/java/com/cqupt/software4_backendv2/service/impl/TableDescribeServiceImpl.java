@@ -54,9 +54,15 @@ public class TableDescribeServiceImpl extends ServiceImpl<TableDescribeMapper, T
             // 删除表头行，剩余的即为数据行
             csvData.remove(0);
             // 创建表信息
+            headers = Arrays.stream(headers)
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
             tableDescribeMapper.createTable(headers,tableName);
             // 保存表头信息和表数据到数据库中
             for (String[] row : csvData) { // 以此保存每行信息到数据库中
+                row = Arrays.stream(row)
+                        .filter(s -> !s.isEmpty())
+                        .toArray(String[]::new);
                 tableDescribeMapper.insertRow(row,tableName);
             }
         }
