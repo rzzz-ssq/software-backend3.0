@@ -32,4 +32,9 @@ public class RuntimeServiceTaskAdapter implements RuntimeTaskService {
         return null;
     }
 
+    @Override
+    public RuntimeTaskResponse submitGSAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception {
+        return null;
+    }
+
 }

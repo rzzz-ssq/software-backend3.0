@@ -247,4 +247,43 @@ public class RuntimeBusController {
         return Result.success(res);
     }
 
+    @PostMapping("/gs_algorithm")
+    public Result gs_algorithm(@RequestBody RuntimeBusCreateRequest request) throws Exception {
+        List<String>  targetList = Arrays.asList(request.getTargetcolumn());
+        RuntimeBusServiceResponse result = runtimeBusService.gs_algorithm(request);
+        String JsonRes= result.getRes().get(0).toString();
+        Gson gson = new Gson();
+        Type listType = new TypeToken<List<Map<String, Object>>>() {}.getType();
+        List<Map<String, Object>> data = gson.fromJson(JsonRes, listType);
+
+        List<List<String>> resDoubleList = new ArrayList<>();
+        List<List<Double>> weightDoubleList = new ArrayList<>();
+        for (String tar: targetList){
+            for (Map<String, Object> map: data) {
+                if(map.get("targetcol").equals(tar)){
+                    List<String> tempResList = new ArrayList<>();
+                    List<Double> temWeightList = new ArrayList<>();
+                    List<Map<String,Double>> res = (List<Map<String, Double>>) map.get("res");
+                    if(res.size()>0){
+                        for (Map<String, Double> tempres:res){
+                            Set<String> keys = tempres.keySet();
+                            for (String key : keys) {
+                                tempResList.add(key);
+                            }
+                        }
+                        resDoubleList.add(tempResList);
+                    }
+                    else{
+                        resDoubleList.add(tempResList);
+                        weightDoubleList.add(temWeightList);
+                    }
+
+                }
+            }
+        }
+        RuntimeBusServiceResponseFinal res = new RuntimeBusServiceResponseFinal();
+        res.setRes(resDoubleList);
+        return Result.success(res);
+    }
+
 }

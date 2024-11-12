@@ -51,17 +51,6 @@ def read_data_from_postgresql(tableName):
 
 # 基于 GS 算法的特征选择，支持多标签
 def grow_shrink_feature_selection_multi_label(X, y, significance_level=0.05):
-    """
-    基于 Grow-Shrink 算法的特征选择，支持多个标签列。
-
-    参数：
-    - X: 特征矩阵，DataFrame 格式，每一列是一个特征
-    - y: 标签矩阵，DataFrame 格式，每一列是一个标签
-    - significance_level: 显著性水平，用于条件独立性检验（chi-square）
-
-    返回：
-    - results: 包含每个标签与其相关特征的字典
-    """
     results = {}
 
     for label in y.columns:
@@ -100,8 +89,8 @@ args = parser.parse_args()
 
 # 从数据库读取数据
 tableName = args.tableName
-target_columns = args.targetcolumns
-feature_columns = args.calculatedColumns
+feature_columns= args.calculatedColumns[0].split(" ")
+target_columns= args.targetcolumns[0].split(" ")
 significance_level = args.significanceLevel
 
 # 加载数据并选择指定的特征和目标列
@@ -113,8 +102,25 @@ y = data_filtered[target_columns]
 # 进行 Grow-Shrink 特征选择
 selected_features = grow_shrink_feature_selection_multi_label(X, y, significance_level)
 
-# 格式化输出结果
-output = [{"targetcol": target, "selected_features": features} for target, features in selected_features.items()]
+# 重新组织数据以匹配第二个代码的输出格式
+results = {}
+for label in target_columns:
+    results[label] = {"targetcol": label, "res": []}
+
+# 将每个标签的选定特征及其权重添加到结果中
+for label, features in selected_features.items():
+    for feature in features:
+        results[label]["res"].append({feature: None})  # 特征值为None表示权重不计算
+
+# 处理输出，确保无特征的标签包含空的 "res"
+output = [value for value in results.values() if value["res"]]
+
+target_cols = [item["targetcol"] for item in output]
+
+# 对于没有相关特征的标签，确保包含空的 "res"
+for tarName in target_columns:
+    if tarName not in target_cols:
+        output.append({"targetcol": tarName, "res": []})
 
 # 转换为 JSON 格式并输出
 json_output = json.dumps(output, ensure_ascii=False, indent=4)

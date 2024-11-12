@@ -14,4 +14,6 @@ public interface RuntimeBusService {
     RuntimeBusServiceResponse pc_algorithm(RuntimeBusCreateRequest request) throws Exception;
 
     RuntimeBusServiceResponse mifs_algorithm(RuntimeBusCreateRequest request) throws Exception;
+
+    RuntimeBusServiceResponse gs_algorithm(RuntimeBusCreateRequest request) throws Exception;
 }

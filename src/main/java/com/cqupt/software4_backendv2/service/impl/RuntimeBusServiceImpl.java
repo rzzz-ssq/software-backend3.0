@@ -33,6 +33,9 @@ public class RuntimeBusServiceImpl implements RuntimeBusService {
 
     @Value("src/main/resources/Scripts/MIFS.py")
     private String mifs_algorithm_scriptPyPath;
+
+    @Value("src/main/resources/Scripts/GS.py")
+    private String gs_algorithm_scriptPyPath;
     @Resource
     private RuntimeTaskService runtimeTaskService;
 
@@ -173,6 +176,26 @@ public class RuntimeBusServiceImpl implements RuntimeBusService {
         runtimeTaskRequest.setPyPath(mifs_algorithm_scriptPyPath);
         runtimeTaskRequest.setArgs(args);
         RuntimeTaskResponse taskResponse=runtimeTaskService.submitMifsAlogrithm(runtimeTaskRequest);
+        response.setRes(taskResponse.getRes());
+        return response;
+    }
+
+    @Override
+    public RuntimeBusServiceResponse gs_algorithm(RuntimeBusCreateRequest request) throws Exception {
+        RuntimeBusServiceResponse response=new RuntimeBusServiceResponse();
+        String[] targets = request.getTargetcolumn();
+        String[] CalculatedColumn = request.getFea();
+        List<String> args=new LinkedList<>();
+        // String []是java的一个对象，需要解析
+        String targetcolumn = "--targetcolumn=" +  String.join(" ", targets);
+        String feacolumn = "--calculatedColumns=" +  String.join(" ", CalculatedColumn);
+        args.add(targetcolumn);
+        args.add(feacolumn);
+        args.add("--tableName="+request.getTablename());
+        RuntimeTaskRequest runtimeTaskRequest=new RuntimeTaskRequest();
+        runtimeTaskRequest.setPyPath(gs_algorithm_scriptPyPath);
+        runtimeTaskRequest.setArgs(args);
+        RuntimeTaskResponse taskResponse=runtimeTaskService.submitGSAlogrithm(runtimeTaskRequest);
         response.setRes(taskResponse.getRes());
         return response;
     }

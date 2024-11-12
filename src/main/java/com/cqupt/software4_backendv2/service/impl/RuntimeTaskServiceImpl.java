@@ -90,4 +90,15 @@ public class RuntimeTaskServiceImpl extends RuntimeServiceTaskAdapter {
         taskResponse.setRes(res);
         return taskResponse;
     }
+
+    @Override
+    public RuntimeTaskResponse submitGSAlogrithm(RuntimeTaskRequest request) throws Exception {
+        RuntimeTaskResponse taskResponse = new RuntimeTaskResponse();
+        BeanUtils.copyProperties(request, taskResponse);
+        String resultStr = pythonRun.runScript(request.getPyPath(), request.getArgs());
+        List<String> res = new ArrayList<>();
+        res.add(resultStr);
+        taskResponse.setRes(res);
+        return taskResponse;
+    }
 }
