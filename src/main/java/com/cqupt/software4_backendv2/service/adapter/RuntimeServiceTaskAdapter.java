@@ -27,4 +27,9 @@ public class RuntimeServiceTaskAdapter implements RuntimeTaskService {
         return null;
     }
 
+    @Override
+    public RuntimeTaskResponse submitMifsAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception {
+        return null;
+    }
+
 }

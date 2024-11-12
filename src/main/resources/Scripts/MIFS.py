@@ -85,21 +85,35 @@ args = parser.parse_args()
 
 # 从数据库读取数据
 tableName = args.tableName
-target_columns = args.targetcolumns
-feature_columns = args.calculatedColumns
 threshold = args.threshold
 
-# 加载数据并选择指定的特征和目标列
+features = args.calculatedColumns[0].split(" ")
+labels = args.targetcolumns[0].split(" ")
+
 data = read_data_from_postgresql(tableName)
-data_filtered = data[feature_columns + target_columns]
-X = data_filtered[feature_columns]
-y = data_filtered[target_columns]
+data_filtered = data[labels + features]
+X = data_filtered[features]
+y = data_filtered[labels]
 
 # 进行互信息特征选择
 selected_features = select_features_by_mutual_info(X, y, threshold)
 
-# 格式化输出结果
-output = [{"targetcol": target, "selected_features": features} for target, features in selected_features.items()]
+# 格式化输出结果，使其与第一个脚本的输出一致
+output = []
+
+# 处理每个目标列的特征
+for label in labels:
+    res_list = [{"targetcol": label, "res": []}]
+    if label in selected_features:
+        feature_res = [{"targetcol": label, "res": [{feature: score} for feature, score in selected_features[label].items()]}]
+        res_list = feature_res
+
+    output.extend(res_list)
+
+# 如果某个标签没有相关特征，仍需添加空的 "res" 列表
+for label in labels:
+    if not any(entry["targetcol"] == label for entry in output):
+        output.append({"targetcol": label, "res": []})
 
 # 转换为 JSON 格式并输出
 json_output = json.dumps(output, ensure_ascii=False, indent=4)

@@ -23,6 +23,7 @@ public class RuntimeBusCreateRequest {
                 ", K_OR=" + K_OR +
                 ", K_and_pc=" + K_and_pc +
                 ", K_and_sp=" + K_and_sp +
+                ", mifs_threshold=" + mifs_threshold +
                 ", knowledge=" + Arrays.toString(knowledge) +
                 '}';
     }
@@ -35,6 +36,10 @@ public class RuntimeBusCreateRequest {
     private double K_and_pc;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER)
     private double K_and_sp;
+
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER)
+    private double mifs_threshold;
+
     private String[] knowledge;
 
 

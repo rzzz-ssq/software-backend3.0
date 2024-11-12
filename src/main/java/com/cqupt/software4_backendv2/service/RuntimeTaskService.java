@@ -17,4 +17,6 @@ public interface RuntimeTaskService {
 
 
     RuntimeTaskResponse submitPcAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception;
+
+    RuntimeTaskResponse submitMifsAlogrithm(RuntimeTaskRequest runtimeTaskRequest) throws Exception;
 }
